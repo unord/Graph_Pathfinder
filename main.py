@@ -43,6 +43,12 @@ class Game:
     def on_keypress(self, event):
         if event.key == pygame.K_RETURN and self.active_node != None:
             self.active_node.set_weight(self.text_input.user_text)
+        elif event.key == pygame.K_DELETE:
+            if self.active_node != None:
+                self.nodes.remove(self.active_node)
+                self.active_node = None
+            else:
+                self.nodes = self.nodes[:-1]
         else:
             self.text_input.input(event)
             
