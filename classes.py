@@ -13,7 +13,7 @@ class TextInput:
         self.state = False
         self.text_surface = None
 
-    def is_active(self, event):
+    def clicked(self, event):
         if self.rect.collidepoint(event.pos):
             self.state = True
         else:
@@ -27,7 +27,7 @@ class TextInput:
                 self.user_text += event.unicode
 
 
-    def update(self, window):
+    def draw(self, window):
         if self.state:
             self.color = self.active
         else:
@@ -39,18 +39,42 @@ class TextInput:
         self.rect.w = max(100, self.text_surface.get_width()+10)
 
 
+class Weight:
+    pass
+
+
 class Node:
     def __init__(self, event):
         self.pos = event.pos
-        self.color_g = (211, 211, 211, 1)
-        self.color_b = (0, 0, 0, 1)
+        self.color_active = pygame.Color("yellow")
+        self.color_boundry = pygame.Color("black")
+        self.color_passive = pygame.Color("grey")
+        self.rect = None
         self.width = 5
-        self.weight = None
-        self.r = 20
+        self.weight = "0"
+        self.r = 26
+        self.state = False
+        self.text_surface = None
+        self.text_color = pygame.Color("black")
+        self.text_font = pygame.font.Font(None, 32)
 
     def set_weight(self, num):
         self.weight = num
+    
+    def clicked(self, pos):
+        if self.rect.collidepoint(pos):
+            self.state = True
+        else:
+            self.state = False
 
     def draw(self, window):
-        pygame.draw.circle(window, self.color_g, self.pos, self.r)
-        pygame.draw.circle(window, self.color_b, self.pos, self.r + self.width, self.width)
+        if self.state:
+            self.rect = pygame.draw.circle(window, self.color_active, self.pos, self.r)
+            pygame.draw.circle(window, self.color_boundry, self.pos, self.r, self.width)
+            self.text_surface = self.text_font.render(self.weight, True, self.text_color)
+            window.blit(self.text_surface, (self.rect.x + self.r/2, self.rect.y + self.r/2))
+        else:
+            self.rect = pygame.draw.circle(window, self.color_passive, self.pos, self.r)
+            pygame.draw.circle(window, self.color_boundry, self.pos, self.r, self.width)
+            self.text_surface = self.text_font.render(self.weight, True, self.text_color)
+            window.blit(self.text_surface, (self.rect.x + self.r/2, self.rect.y + self.r/2))
