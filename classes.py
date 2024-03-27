@@ -26,7 +26,6 @@ class TextInput:
             else: 
                 self.user_text += event.unicode
 
-
     def draw(self, window):
         if self.state:
             self.color = self.active
@@ -40,7 +39,37 @@ class TextInput:
 
 
 class Weight:
-    pass
+    def __init__(self, start_node, end_node):
+        self.start_node = start_node
+        self.end_node = end_node
+        self.width = 10
+        self.length = "0"
+        self.state = False
+        self.active_color = pygame.Color("yellow")
+        self.passive_color = pygame.Color("black")
+        self.rect = None
+        self.text_font = pygame.font.Font(None, 32)
+        self.text_surface = None
+        self.text_color = pygame.Color("black")
+
+    def clicked(self, pos):
+        if self.rect.collidepoint(pos):
+            self.state = True
+        else:
+            self.state = False
+    
+    def set_length(self, num):
+        self.length = num
+
+    def draw(self, window):
+        if self.state:
+            self.rect = pygame.draw.line(window, self.active_color, self.start_node.pos, self.end_node.pos, self.width)
+            self.text_surface = self.text_font.render(self.length, True, self.text_color)
+            window.blit(self.text_surface, (self.rect.centerx + 10, self.rect.centery + 10))
+        else:
+            self.rect = pygame.draw.line(window, self.passive_color, self.start_node.pos, self.end_node.pos, self.width)
+            self.text_surface = self.text_font.render(self.length, True, self.text_color)
+            window.blit(self.text_surface, (self.rect.centerx + 10, self.rect.centery + 10))
 
 
 class Node:
@@ -51,15 +80,15 @@ class Node:
         self.color_passive = pygame.Color("grey")
         self.rect = None
         self.width = 5
-        self.weight = "0"
+        self.name = "A"
         self.r = 26
         self.state = False
         self.text_surface = None
         self.text_color = pygame.Color("black")
         self.text_font = pygame.font.Font(None, 32)
 
-    def set_weight(self, num):
-        self.weight = num
+    def set_name(self, name):
+        self.name = name
     
     def clicked(self, pos):
         if self.rect.collidepoint(pos):
@@ -71,10 +100,10 @@ class Node:
         if self.state:
             self.rect = pygame.draw.circle(window, self.color_active, self.pos, self.r)
             pygame.draw.circle(window, self.color_boundry, self.pos, self.r, self.width)
-            self.text_surface = self.text_font.render(self.weight, True, self.text_color)
+            self.text_surface = self.text_font.render(self.name, True, self.text_color)
             window.blit(self.text_surface, (self.rect.x + self.r/2, self.rect.y + self.r/2))
         else:
             self.rect = pygame.draw.circle(window, self.color_passive, self.pos, self.r)
             pygame.draw.circle(window, self.color_boundry, self.pos, self.r, self.width)
-            self.text_surface = self.text_font.render(self.weight, True, self.text_color)
+            self.text_surface = self.text_font.render(self.name, True, self.text_color)
             window.blit(self.text_surface, (self.rect.x + self.r/2, self.rect.y + self.r/2))
