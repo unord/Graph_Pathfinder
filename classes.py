@@ -86,9 +86,17 @@ class Node:
         self.text_surface = None
         self.text_color = pygame.Color("black")
         self.text_font = pygame.font.Font(None, 32)
+        self.weights = []
 
     def set_name(self, name):
         self.name = name
+
+    def add_weight(self, weight):
+        self.weights.append(weight)
+
+    def remove_weight(self, weight):
+        if weight in self.weights:
+            self.weights.remove(weight)
     
     def clicked(self, pos):
         if self.rect.collidepoint(pos):

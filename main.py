@@ -60,10 +60,18 @@ class Game:
                 self.active.set_length(self.text_input.user_text)
         elif event.key == pygame.K_DELETE:
             if isinstance(self.active, Node):
+                deleted = self.active
                 self.nodes.remove(self.active)
                 self.active = None
             else:
+                deleted = self.nodes[-1]
                 self.nodes = self.nodes[:-1]
+
+            for weight in deleted.weights:
+                for node in self.nodes:
+                    node.remove_weight(weight)
+
+                self.weights.remove(weight)
         else:
             self.text_input.input(event)
 
@@ -73,6 +81,8 @@ class Game:
                 if node is not self.active:
                     if node.rect.collidepoint(event.pos):
                         curr = Weight(self.active, node)
+                        self.active.add_weight(curr)
+                        node.add_weight(curr)
 
                         if self.active:
                             self.active.state = False
