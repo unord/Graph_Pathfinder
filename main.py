@@ -64,8 +64,7 @@ class Game:
                 self.nodes.remove(self.active)
                 self.active = None
             else:
-                deleted = self.nodes[-1]
-                self.nodes = self.nodes[:-1]
+                deleted = self.nodes.pop()
 
             for weight in deleted.weights:
                 for node in self.nodes:
