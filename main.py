@@ -14,13 +14,12 @@ class Game:
         self.info = pygame.display.Info()
         self.WIDTH, self.HEIGHT = self.info.current_w, self.info.current_h
         self.nodes = []
-        self.active_node = None
         self.place_node_bool = None
         self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT), flags=pygame.FULLSCREEN)
         pygame.display.set_caption('Graph Visualizer')
         self.text_input = TextInput()
         self.weights = []
-        self.active_weight = None
+        self.active = None
     
     def quit_func(self, event):
         if event.type == pygame.KEYDOWN:
@@ -29,45 +28,58 @@ class Game:
                 sys.exit()
 
     def select_item(self, event):
-        self.active_node = None
-        self.active_weight = None
         for node in self.nodes:
             node.clicked(event.pos)
             if node.state:
-                self.active_node = node
+                if self.active: self.active.state = False
+                self.active = node
+                return False
+
         for weight in self.weights:
             weight.clicked(event.pos)
             if weight.state:
-                self.active_weight = weight
-        
+                if self.active: self.active.state = False
+                self.active = weight
+                return False
+
+        res = self.active is None
+        self.active = None
+        return res
+
     def on_click(self, event):
         self.text_input.clicked(event)
         if not self.text_input.state:
-            self.select_item(event)
-            if self.active_node == None and self.active_weight == None:
+            if self.select_item(event):
                 self.nodes.append(Node(event))
     
     def on_keypress(self, event):
         if event.key == pygame.K_RETURN:
-            if self.active_node != None:
-                self.active_node.set_name(self.text_input.user_text)
-            elif self.active_weight != None:
-                self.active_weight.set_length(self.text_input.user_text)
+            if isinstance(self.active, Node):
+                self.active.set_name(self.text_input.user_text)
+            elif isinstance(self.active, Weight):
+                self.active.set_length(self.text_input.user_text)
         elif event.key == pygame.K_DELETE:
-            if self.active_node != None:
-                self.nodes.remove(self.active_node)
-                self.active_node = None
+            if isinstance(self.active, Node):
+                self.nodes.remove(self.active)
+                self.active = None
             else:
                 self.nodes = self.nodes[:-1]
         else:
             self.text_input.input(event)
 
     def set_weight(self, event):
-        if self.active_node != None:
+        if isinstance(self.active, Node):
             for node in self.nodes:
-                if node is not self.active_node:
+                if node is not self.active:
                     if node.rect.collidepoint(event.pos):
-                        self.weights.append(Weight(self.active_node, node))
+                        curr = Weight(self.active, node)
+
+                        if self.active:
+                            self.active.state = False
+
+                        curr.state = True
+                        self.active = curr
+                        self.weights.append(curr)
             
     def draw(self):
         self.window.fill(self.bg_color)
