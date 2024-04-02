@@ -15,7 +15,6 @@ class Game:
         self.info = pygame.display.Info()
         self.WIDTH, self.HEIGHT = self.info.current_w, self.info.current_h
         self.nodes = []
-        self.place_node_bool = None
         self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT), flags=pygame.FULLSCREEN)
         pygame.display.set_caption('Graph Visualizer')
         self.text_input = TextInput()
