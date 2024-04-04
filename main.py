@@ -27,23 +27,34 @@ class Game:
                 pygame.quit()
                 sys.exit()
 
+    def set_active(self, new):
+        if self.active:
+            self.active.state = False
+
+        self.active = new
+
+        if self.active is None:
+            self.text_input.user_text = ""
+        elif isinstance(self.active, Node):
+            self.text_input.user_text = self.active.name
+        else:
+            self.text_input.user_text = self.active.length
+
     def select_item(self, event):
         for node in self.nodes:
             node.clicked(event.pos)
             if node.state:
-                if self.active: self.active.state = False
-                self.active = node
+                self.set_active(node)
                 return False
 
         for weight in self.weights:
             weight.clicked(event.pos)
             if weight.state:
-                if self.active: self.active.state = False
-                self.active = weight
+                self.set_active(weight)
                 return False
 
         res = self.active is None
-        self.active = None
+        self.set_active(None)
         return res
 
     def on_click(self, event):
@@ -59,10 +70,20 @@ class Game:
             elif isinstance(self.active, Weight):
                 self.active.set_length(self.text_input.user_text)
         elif event.key == pygame.K_DELETE:
-            if isinstance(self.active, Node):
+            if isinstance(self.active, Weight):
+                self.weights.remove(self.active)
+
+                for node in self.nodes:
+                    node.remove_weight(self.active)
+
+                self.set_active(None)
+                return
+
+            elif isinstance(self.active, Node):
                 deleted = self.active
                 self.nodes.remove(self.active)
-                self.active = None
+                self.set_active(None)
+
             else:
                 deleted = self.nodes.pop()
 
@@ -80,14 +101,13 @@ class Game:
                 if node is not self.active:
                     if node.rect.collidepoint(event.pos):
                         curr = Weight(self.active, node)
+
                         self.active.add_weight(curr)
                         node.add_weight(curr)
 
-                        if self.active:
-                            self.active.state = False
-
+                        self.set_active(curr)
                         curr.state = True
-                        self.active = curr
+
                         self.weights.append(curr)
             
     def draw(self):
