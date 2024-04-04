@@ -2,21 +2,22 @@ import pygame
 
 
 class Button:
-    def __init__(self, rect):
+    def __init__(self, rect, text):
         self.state = False
         self.rect = rect
-        self.text = ""
+        self.text = text
         self.text_surface = None
         self.text_font = pygame.font.Font(None, 32)
         self.text_color = pygame.Color("black")
         self.passive_color = pygame.Color("white")
         self.active_color = pygame.Color("yellow")
 
-    def clicked(self, event):
-        if self.rect.collidepoint(event.pos):
+    def clicked(self, pos):
+        if self.rect.collidepoint(pos):
             self.state = True
         else: 
             self.state = False
+        return self.state
     
     def draw(self, window):
         if self.state:
@@ -26,7 +27,7 @@ class Button:
             self.rect.w = max(100, self.text_surface.get_width()+10)
         else:
             pygame.draw.rect(window, self.passive_color, self.rect)
-            self.text_surface = self.text_font.render(self.user_text, True, self.text_color)
+            self.text_surface = self.text_font.render(self.text, True, self.text_color)
             window.blit(self.text_surface, (self.rect.x+5, self.rect.y+5))
             self.rect.w = max(100, self.text_surface.get_width()+10)
 

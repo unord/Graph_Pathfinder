@@ -3,7 +3,7 @@ import draw
 import math
 import ctypes
 import sys
-from classes import Node, TextInput, Weight
+from classes import Node, TextInput, Weight, Button
 import typing
 
 
@@ -20,6 +20,8 @@ class Game:
         self.text_input = TextInput()
         self.weights = []
         self.active = None
+        self.active_button = None
+        self.buttons = [Button(pygame.Rect(400, 200, 140, 32), "start")]
     
     def quit_func(self, event: pygame.event.Event) -> None:
         """
@@ -34,7 +36,7 @@ class Game:
                 pygame.quit()
                 sys.exit()
 
-    def set_active(self, new: Node | Weight | None) -> None:
+    def set_active(self, new: Node | Weight | Button |None) -> None:
         """
         Sets the active item and handles necessary changes involved in the process.
 
@@ -57,7 +59,7 @@ class Game:
             self.text_input.user_text = ""
         elif isinstance(self.active, Node):
             self.text_input.user_text = self.active.name
-        else:
+        elif isinstance(self.active, Weight):
             self.text_input.user_text = self.active.length
 
     def select_item(self, event: pygame.event.Event) -> bool:
@@ -78,6 +80,11 @@ class Game:
         for weight in self.weights:
             if weight.clicked(event.pos):
                 self.set_active(weight)
+                return False
+        
+        for button in self.buttons:
+            if button.clicked(event.pos):
+                self.set_active(button)
                 return False
 
         # If active is already None, new node should be created
@@ -192,6 +199,9 @@ class Game:
 
         for node in self.nodes:
             node.draw(self.window)
+        
+        for button in self.buttons:
+            button.draw(self.window)
 
         self.text_input.draw(self.window)
         pygame.display.update()
