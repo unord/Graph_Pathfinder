@@ -5,11 +5,10 @@ import ctypes
 import sys
 from classes import Node, TextInput, Weight
 
-ctypes.windll.user32.SetProcessDPIAware()
-
 
 class Game:
     def __init__(self):
+        ctypes.windll.user32.SetProcessDPIAware()
         pygame.init()
         self.bg_color = (100, 100, 240, 0.5)
         self.info = pygame.display.Info()
