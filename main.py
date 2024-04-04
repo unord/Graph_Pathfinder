@@ -27,11 +27,21 @@ class Game:
                 pygame.quit()
                 sys.exit()
 
-    def set_active(self, new):
+    def set_active(self, new) -> None:
+        """
+        Sets the active item and handles necessary changes involved in the process.
+
+        :param new: Item to set active
+        :return:
+        """
+
         if self.active:
             self.active.state = False
 
         self.active = new
+
+        if self.active is not None:
+            self.active.state = True
 
         if self.active is None:
             self.text_input.user_text = ""
@@ -42,14 +52,12 @@ class Game:
 
     def select_item(self, event):
         for node in self.nodes:
-            node.clicked(event.pos)
-            if node.state:
+            if node.clicked(event.pos):
                 self.set_active(node)
                 return False
 
         for weight in self.weights:
-            weight.clicked(event.pos)
-            if weight.state:
+            if weight.clicked(event.pos):
                 self.set_active(weight)
                 return False
 
@@ -61,7 +69,9 @@ class Game:
         self.text_input.clicked(event)
         if not self.text_input.state:
             if self.select_item(event):
-                self.nodes.append(Node(event))
+                new = Node(event)
+                self.nodes.append(new)
+                # self.set_active(new)
     
     def on_keypress(self, event):
         if event.key == pygame.K_RETURN:
@@ -106,8 +116,6 @@ class Game:
                         node.add_weight(curr)
 
                         self.set_active(curr)
-                        curr.state = True
-
                         self.weights.append(curr)
             
     def draw(self):
