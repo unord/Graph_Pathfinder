@@ -70,14 +70,14 @@ class Weight:
 
 
 class Node:
-    def __init__(self, event):
+    def __init__(self, event, name):
         self.pos = event.pos
         self.color_active = pygame.Color("yellow")
         self.color_boundry = pygame.Color("black")
         self.color_passive = pygame.Color("grey")
         self.rect = None
         self.width = 5
-        self.name = "A"
+        self.name = name
         self.r = 26
         self.state = False
         self.text_surface = None

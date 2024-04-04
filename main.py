@@ -5,6 +5,7 @@ import ctypes
 import sys
 from classes import Node, TextInput, Weight
 import typing
+from string import ascii_uppercase as alphabet
 
 ctypes.windll.user32.SetProcessDPIAware()
 
@@ -21,6 +22,7 @@ class Game:
         self.text_input = TextInput()
         self.weights = []
         self.active = None
+        self.consumed_names = set()
     
     def quit_func(self, event: pygame.event.Event) -> None:
         """
@@ -34,6 +36,53 @@ class Game:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
+
+    @staticmethod
+    def int_to_name(n):
+        digits = []
+
+        while n:
+            n -= 1
+            digits.append(alphabet[n % len(alphabet)])
+            n //= len(alphabet)
+
+        digits = digits[::-1]
+        return "".join(digits)
+
+    @staticmethod
+    def name_to_int(name):
+        n = 0
+
+        for i, char in enumerate(name[::-1]):
+            idx = alphabet.index(char)
+            n += (idx + 1) * (26 ** i)
+
+        return n
+
+    def get_next_name(self):
+        i = 1
+
+        while True:
+            if i not in self.consumed_names:
+                self.consumed_names.add(i)
+                return self.int_to_name(i)
+
+            i += 1
+
+    def remove_name(self, name):
+        n = self.name_to_int(name)
+
+        if n in self.consumed_names:
+            self.consumed_names.remove(n)
+
+    def is_name_valid(self, name):
+        if any(char not in alphabet for char in name):
+            return False
+
+        elif self.name_to_int(name) in self.consumed_names:
+            return False
+
+        return True
 
     def set_active(self, new: Node | Weight | None) -> None:
         """
@@ -100,7 +149,7 @@ class Game:
 
             # Find selected items, and check if new node is to be created
             if self.select_item(event):
-                new = Node(event)
+                new = Node(event, self.get_next_name())
                 self.nodes.append(new)
                 # self.set_active(new)  # Can be enabled to set new nodes activated
     
@@ -115,7 +164,8 @@ class Game:
         # If return key is pressed, update selected item value
         if event.key == pygame.K_RETURN:
             if isinstance(self.active, Node):
-                self.active.set_name(self.text_input.user_text)
+                if self.is_name_valid(self.text_input.user_text):
+                    self.active.set_name(self.text_input.user_text)
 
             elif isinstance(self.active, Weight):
                 self.active.set_length(self.text_input.user_text)
@@ -142,6 +192,8 @@ class Game:
 
             else:
                 deleted = self.nodes.pop()
+
+            self.remove_name(deleted.name)
 
             # Delete all connected weights and update nodes accordingly
             for weight in deleted.weights:
@@ -215,7 +267,7 @@ class Game:
                     self.set_weight(event)
 
             self.draw()
-            
+
 
 if __name__ == "__main__":
     game = Game()
