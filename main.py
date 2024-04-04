@@ -4,6 +4,7 @@ import math
 import ctypes
 import sys
 from classes import Node, TextInput, Weight
+import typing
 
 
 class Game:
@@ -20,85 +21,188 @@ class Game:
         self.weights = []
         self.active = None
     
-    def quit_func(self, event):
+    def quit_func(self, event: pygame.event.Event) -> None:
+        """
+        Checks event for quit-condition and exits if detected.
+
+        :param event: Event to check
+        :return: None
+        """
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
 
-    def select_item(self, event):
+    def set_active(self, new: Node | Weight | None) -> None:
+        """
+        Sets the active item and handles necessary changes involved in the process.
+
+        :param new: Item to set as active
+        :return: None
+        """
+
+        # Unset state of old active item
+        if self.active:
+            self.active.state = False
+
+        self.active = new
+
+        # If new item is not None, set its state
+        if self.active is not None:
+            self.active.state = True
+
+        # Update the text input appropriately
+        if self.active is None:
+            self.text_input.user_text = ""
+        elif isinstance(self.active, Node):
+            self.text_input.user_text = self.active.name
+        else:
+            self.text_input.user_text = self.active.length
+
+    def select_item(self, event: pygame.event.Event) -> bool:
+        """
+        Checks all items for clicks and evaluates whether the conditions for creating a new node is met.
+
+        :param event: Event to be evaluated
+        :return: Whether a new node should be created
+        """
+
+        # Iterate all nodes and detect presses
         for node in self.nodes:
-            node.clicked(event.pos)
-            if node.state:
-                if self.active: self.active.state = False
-                self.active = node
+            if node.clicked(event.pos):
+                self.set_active(node)
                 return False
 
+        # Iterate all weights and detect presses
         for weight in self.weights:
-            weight.clicked(event.pos)
-            if weight.state:
-                if self.active: self.active.state = False
-                self.active = weight
+            if weight.clicked(event.pos):
+                self.set_active(weight)
                 return False
 
+        # If active is already None, new node should be created
         res = self.active is None
-        self.active = None
+        self.set_active(None)
         return res
 
-    def on_click(self, event):
+    def on_click(self, event: pygame.event.Event) -> None:
+        """
+        Handle mouse click event.
+
+        :param event: Mouse click event
+        :return: None
+        """
+
+        # Ensure text input field is not clicked
         self.text_input.clicked(event)
         if not self.text_input.state:
+
+            # Find selected items, and check if new node is to be created
             if self.select_item(event):
-                self.nodes.append(Node(event))
+                new = Node(event)
+                self.nodes.append(new)
+                # self.set_active(new)  # Can be enabled to set new nodes activated
     
-    def on_keypress(self, event):
+    def on_keypress(self, event: pygame.event.Event) -> None:
+        """
+        Handle a keypress event.
+
+        :param event: Keypress event
+        :return: None
+        """
+
+        # If return key is pressed, update selected item value
         if event.key == pygame.K_RETURN:
             if isinstance(self.active, Node):
                 self.active.set_name(self.text_input.user_text)
+
             elif isinstance(self.active, Weight):
                 self.active.set_length(self.text_input.user_text)
+
+        # If delete key is pressed, delete selected item or previous node
         elif event.key == pygame.K_DELETE:
-            if isinstance(self.active, Node):
+
+            # Selected item is a weight
+            if isinstance(self.active, Weight):
+                self.weights.remove(self.active)
+
+                # Ensure nodes are updated to not include references to weight
+                for node in self.nodes:
+                    node.remove_weight(self.active)
+
+                self.set_active(None)
+                return
+
+            # Selected item is a node
+            elif isinstance(self.active, Node):
                 deleted = self.active
                 self.nodes.remove(self.active)
-                self.active = None
+                self.set_active(None)
+
             else:
                 deleted = self.nodes.pop()
 
+            # Delete all connected weights and update nodes accordingly
             for weight in deleted.weights:
                 for node in self.nodes:
                     node.remove_weight(weight)
 
                 self.weights.remove(weight)
+
         else:
+
+            # Input falls through to text input (if state is set)
             self.text_input.input(event)
 
-    def set_weight(self, event):
+    def set_weight(self, event: pygame.event.Event) -> None:
+        """
+        Creates a new weight if the user has dragged mouse between nodes.
+
+        :param event: Mouse button up event to be evaluated
+        :return: None
+        """
+
+        # Check is node is currently selected
         if isinstance(self.active, Node):
             for node in self.nodes:
                 if node is not self.active:
-                    if node.rect.collidepoint(event.pos):
+
+                    # Find node that user unclicked on (dragged)
+                    if node.clicked(event.pos):
                         curr = Weight(self.active, node)
+
+                        # Add new weight to both connected nodes
                         self.active.add_weight(curr)
                         node.add_weight(curr)
 
-                        if self.active:
-                            self.active.state = False
-
-                        curr.state = True
-                        self.active = curr
+                        self.set_active(curr)
                         self.weights.append(curr)
             
-    def draw(self):
+    def draw(self) -> None:
+        """
+        Draw the scene.
+
+        :return: None
+        """
+
         self.window.fill(self.bg_color)
+
         for weight in self.weights:
             weight.draw(self.window)
+
         for node in self.nodes:
             node.draw(self.window)
+
         self.text_input.draw(self.window)
         pygame.display.update()
 
-    def main(self):
+    def main(self) -> None:
+        """
+        Main function loop.
+
+        :return: None
+        """
+
         while True:
             for event in pygame.event.get():
                 self.quit_func(event)

@@ -83,10 +83,7 @@ class Weight:
         self.text_color = pygame.Color("black")
 
     def clicked(self, pos):
-        if self.rect.collidepoint(pos):
-            self.state = True
-        else:
-            self.state = False
+        return self.rect.collidepoint(pos)
     
     def set_length(self, num):
         self.length = num
@@ -129,10 +126,7 @@ class Node:
             self.weights.remove(weight)
     
     def clicked(self, pos):
-        if self.rect.collidepoint(pos):
-            self.state = True
-        else:
-            self.state = False
+        return self.rect.collidepoint(pos)
 
     def draw(self, window):
         if self.state:
