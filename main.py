@@ -59,8 +59,6 @@ class Game:
             n += (idx + 1) * (26 ** i)
 
         return n
-    
-    
 
     def get_next_name(self):
         i = 1
@@ -88,17 +86,32 @@ class Game:
         return True
 
     def set_node_start(self):
-        if isinstance(self.active, Node):
-            self.active.is_start = not self.active.is_start
-            self.active.is_end = False
-            self.set_active(None)
-            print("lol")
+        if not isinstance(self.active, Node):
+            return
+
+        if self.active.is_start:
+            self.active.is_start = False
+            return
+
+        for node in self.nodes:
+            node.is_start = False
+
+        self.active.is_start = True
+        self.active.is_end = False
 
     def set_node_end(self):
-        if isinstance(self.active, Node):
-            self.active.is_end = not self.active.is_end
-            self.active.is_start = False
-            self.set_active(None)
+        if not isinstance(self.active, Node):
+            return
+
+        if self.active.is_end:
+            self.active.is_end = False
+            return
+
+        for node in self.nodes:
+            node.is_end = False
+
+        self.active.is_end = True
+        self.active.is_start = False
 
     def set_active(self, new: Node | Weight | Button | None) -> None:
         """
