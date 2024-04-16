@@ -110,10 +110,12 @@ class Weight:
 class Node:
     def __init__(self, event, name):
         self.pos = event.pos
+        self.color_active_start = pygame.Color("lime")
+        self.color_active_end = pygame.Color("orange")
         self.color_active = pygame.Color("yellow")
         self.color_boundry = pygame.Color("black")
         self.color_passive = pygame.Color("grey")
-        self.start_color = pygame.Color("green")
+        self.start_color = pygame.Color("limegreen")
         self.end_color = pygame.Color("red")
         self.rect = None
         self.width = 5
@@ -141,7 +143,11 @@ class Node:
         return self.rect.collidepoint(pos)
 
     def draw(self, window):
-        if self.state:
+        if self.state and self.is_start:
+            self.rect = pygame.draw.circle(window, self.color_active_start, self.pos, self.r)
+        elif self.state and self.is_end:
+            self.rect = pygame.draw.circle(window, self.color_active_end, self.pos, self.r)
+        elif self.state:
             self.rect = pygame.draw.circle(window, self.color_active, self.pos, self.r)
         elif self.is_start:
             self.rect = pygame.draw.circle(window, self.start_color, self.pos, self.r)
