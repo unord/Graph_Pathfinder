@@ -88,7 +88,8 @@ class Weight:
         self.text_color = pygame.Color("black")
 
     def clicked(self, pos):
-        return self.rect.collidepoint(pos)
+        click_rect = pygame.rect.Rect(pos[0] - 15, pos[1] - 15, 30, 30)
+        return click_rect.clipline(self.start_node.pos, self.end_node.pos)
     
     def set_length(self, num):
         self.length = num
@@ -96,12 +97,11 @@ class Weight:
     def draw(self, window):
         if self.state:
             self.rect = pygame.draw.line(window, self.active_color, self.start_node.pos, self.end_node.pos, self.width)
-            self.text_surface = self.text_font.render(self.length, True, self.text_color)
-            window.blit(self.text_surface, (self.rect.centerx + 10, self.rect.centery + 10))
         else:
             self.rect = pygame.draw.line(window, self.passive_color, self.start_node.pos, self.end_node.pos, self.width)
-            self.text_surface = self.text_font.render(self.length, True, self.text_color)
-            window.blit(self.text_surface, (self.rect.centerx + 10, self.rect.centery + 10))
+
+        self.text_surface = self.text_font.render(self.length, True, self.text_color)
+        window.blit(self.text_surface, (self.rect.centerx + 10, self.rect.centery + 10))
 
 
 class Node:
@@ -136,11 +136,9 @@ class Node:
     def draw(self, window):
         if self.state:
             self.rect = pygame.draw.circle(window, self.color_active, self.pos, self.r)
-            pygame.draw.circle(window, self.color_boundry, self.pos, self.r, self.width)
-            self.text_surface = self.text_font.render(self.name, True, self.text_color)
-            window.blit(self.text_surface, (self.rect.x + self.r/2, self.rect.y + self.r/2))
         else:
             self.rect = pygame.draw.circle(window, self.color_passive, self.pos, self.r)
-            pygame.draw.circle(window, self.color_boundry, self.pos, self.r, self.width)
-            self.text_surface = self.text_font.render(self.name, True, self.text_color)
-            window.blit(self.text_surface, (self.rect.x + self.r/2, self.rect.y + self.r/2))
+
+        pygame.draw.circle(window, self.color_boundry, self.pos, self.r, self.width)
+        self.text_surface = self.text_font.render(self.name, True, self.text_color)
+        window.blit(self.text_surface, (self.rect.x + self.r / 2, self.rect.y + self.r / 2))
