@@ -2,7 +2,9 @@ import pygame
 
 
 class Button:
-    def __init__(self, rect, text):
+    def __init__(self, rect, text, func, *args):
+        self.args = args
+        self.func = func
         self.state = False
         self.rect = rect
         self.text = text
@@ -14,10 +16,10 @@ class Button:
 
     def clicked(self, pos):
         if self.rect.collidepoint(pos):
-            self.state = True
-        else: 
-            self.state = False
-        return self.state
+            self.func(*self.args)
+            return True
+        
+        return False
     
     def draw(self, window):
         if self.state:
@@ -110,6 +112,8 @@ class Node:
         self.width = 5
         self.name = name
         self.r = 26
+        self.is_start = False
+        self.is_end = False
         self.state = False
         self.text_surface = None
         self.text_color = pygame.Color("black")

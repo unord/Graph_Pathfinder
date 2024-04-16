@@ -22,8 +22,7 @@ class Game:
         self.weights = []
         self.active = None
         self.consumed_names = set()
-        self.active_button = None
-        self.buttons = [Button(pygame.Rect(400, 200, 140, 32), "start")]
+        self.buttons = [Button(pygame.Rect(400, 200, 140, 32), "start", self.set_node_start)]
     
     def quit_func(self, event: pygame.event.Event) -> None:
         """
@@ -59,6 +58,8 @@ class Game:
             n += (idx + 1) * (26 ** i)
 
         return n
+    
+    
 
     def get_next_name(self):
         i = 1
@@ -84,6 +85,19 @@ class Game:
             return False
 
         return True
+
+    def set_node_start(self):
+        if isinstance(self.active, Node):
+            self.active.is_start = not self.active.is_start
+            self.active.is_end = False
+            self.set_active(None)
+            print("lol")
+
+    def set_node_end(self):
+        if isinstance(self.active, Node):
+            self.active.is_end = not self.active.is_end
+            self.active.is_start = False
+            self.set_active(None)
 
     def set_active(self, new: Node | Weight | Button | None) -> None:
         """
@@ -133,7 +147,6 @@ class Game:
         
         for button in self.buttons:
             if button.clicked(event.pos):
-                self.set_active(button)
                 return False
 
         # If active is already None, new node should be created
