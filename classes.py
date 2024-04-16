@@ -74,7 +74,11 @@ class Weight:
         self.start_node = start_node
         self.end_node = end_node
         self.width = 10
-        self.length = "0"
+
+        diff_x = abs(start_node.pos[1] - end_node.pos[1])
+        diff_y = abs(start_node.pos[0] - end_node.pos[0])
+        self.length = str(int((diff_x**2 + diff_y**2)**0.5) // 100)
+
         self.state = False
         self.active_color = pygame.Color("yellow")
         self.passive_color = pygame.Color("black")
