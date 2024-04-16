@@ -13,6 +13,7 @@ class Button:
         self.text_color = pygame.Color("black")
         self.passive_color = pygame.Color("white")
         self.active_color = pygame.Color("yellow")
+        
 
     def clicked(self, pos):
         if self.rect.collidepoint(pos):
@@ -112,6 +113,8 @@ class Node:
         self.color_active = pygame.Color("yellow")
         self.color_boundry = pygame.Color("black")
         self.color_passive = pygame.Color("grey")
+        self.start_color = pygame.Color("green")
+        self.end_color = pygame.Color("red")
         self.rect = None
         self.width = 5
         self.name = name
@@ -140,6 +143,10 @@ class Node:
     def draw(self, window):
         if self.state:
             self.rect = pygame.draw.circle(window, self.color_active, self.pos, self.r)
+        elif self.is_start:
+            self.rect = pygame.draw.circle(window, self.start_color, self.pos, self.r)
+        elif self.is_end:
+            self.rect = pygame.draw.circle(window, self.end_color, self.pos, self.r)
         else:
             self.rect = pygame.draw.circle(window, self.color_passive, self.pos, self.r)
 
