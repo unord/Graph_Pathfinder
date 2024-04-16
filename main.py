@@ -22,7 +22,8 @@ class Game:
         self.weights = []
         self.active = None
         self.consumed_names = set()
-        self.buttons = [Button(pygame.Rect(400, 200, 140, 32), "start", self.set_node_start)]
+        self.buttons = [Button(pygame.Rect(400, 200, 140, 32), "start", self.set_node_start),
+                        Button(pygame.Rect(600, 200, 140, 32), "end", self.set_node_end)]
     
     def quit_func(self, event: pygame.event.Event) -> None:
         """
