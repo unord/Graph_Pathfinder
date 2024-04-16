@@ -96,6 +96,11 @@ class Weight:
     def set_length(self, num):
         self.length = num
 
+    def get_other_node(self, node):
+        if node is self.start_node:
+            return self.end_node
+        return self.start_node
+
     def draw(self, window):
         if self.state:
             self.rect = pygame.draw.line(window, self.active_color, self.start_node.pos, self.end_node.pos, self.width)
