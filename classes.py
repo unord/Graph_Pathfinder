@@ -13,7 +13,6 @@ class Button:
         self.text_color = pygame.Color("black")
         self.passive_color = pygame.Color("white")
         self.active_color = pygame.Color("yellow")
-        
 
     def clicked(self, pos):
         if self.rect.collidepoint(pos):
