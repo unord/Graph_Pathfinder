@@ -6,3 +6,6 @@ class Dijkstra:
         self.nodes = nodes
         self.weights = weights
         self.draw = draw
+
+    def run(self):
+        print("lberoerbrjbiuwribrei")

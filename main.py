@@ -4,6 +4,7 @@ import math
 import ctypes
 import sys
 from classes import Node, TextInput, Weight, Button
+from algo import Dijkstra
 import typing
 from string import ascii_uppercase as alphabet
 
@@ -22,8 +23,10 @@ class Game:
         self.weights = []
         self.active = None
         self.consumed_names = set()
+        self.dijkstra = Dijkstra(self.nodes, self.weights, self.draw)
         self.buttons = [Button(pygame.Rect(400, 200, 140, 32), "start", self.set_node_start),
-                        Button(pygame.Rect(600, 200, 140, 32), "end", self.set_node_end)]
+                        Button(pygame.Rect(600, 200, 140, 32), "end", self.set_node_end),
+                        Button(pygame.Rect(800, 200, 140, 32), "dijkstra", self.dijkstra.run)]
     
     def quit_func(self, event: pygame.event.Event) -> None:
         """
@@ -147,6 +150,10 @@ class Game:
         :return: Whether a new node should be created
         """
 
+        for button in self.buttons:
+            if button.clicked(event.pos):
+                return False
+
         # Iterate all nodes and detect presses
         for node in self.nodes:
             if node.clicked(event.pos):
@@ -157,10 +164,6 @@ class Game:
         for weight in self.weights:
             if weight.clicked(event.pos):
                 self.set_active(weight)
-                return False
-        
-        for button in self.buttons:
-            if button.clicked(event.pos):
                 return False
 
         # If active is already None, new node should be created
