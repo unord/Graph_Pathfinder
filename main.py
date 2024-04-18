@@ -1,12 +1,12 @@
 import pygame
-import draw
-import math
 import ctypes
 import sys
 from classes import Node, TextInput, Weight, Button
 from algo import Dijkstra
-import typing
 from string import ascii_uppercase as alphabet
+
+
+# TODO: Separer UI-funktionalitet i egen klasse
 
 
 class Game:

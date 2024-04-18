@@ -25,6 +25,8 @@ class Dijkstra:
         self.curr_paths = []
         self.new_paths = []
 
+        self.recording = []
+
     def find_start(self):
         for node in self.nodes:
             if node.is_start:
@@ -48,7 +50,7 @@ class Dijkstra:
         self.fastest_paths[dest_node] = path
         self.new_paths.append(path)
 
-        # Something something recording
+        self.recording.append(path)
 
     def explore_weight(self, path, weight):
         other = weight.get_other_node(path.curr_node)
