@@ -1,12 +1,12 @@
 import pygame
-import draw
-import math
 import ctypes
 import sys
 from classes import Node, TextInput, Weight, Button
 from algo import Dijkstra
-import typing
 from string import ascii_uppercase as alphabet
+
+
+# TODO: Separer UI-funktionalitet i egen klasse
 
 
 class Game:
@@ -23,7 +23,7 @@ class Game:
         self.weights = []
         self.active = None
         self.consumed_names = set()
-        self.dijkstra = Dijkstra(self.nodes, self.weights, self.draw)
+        self.dijkstra = Dijkstra(self.nodes, self.weights)
         self.buttons = [Button(pygame.Rect(400, 200, 140, 32), "start", self.set_node_start),
                         Button(pygame.Rect(600, 200, 140, 32), "end", self.set_node_end),
                         Button(pygame.Rect(800, 200, 140, 32), "dijkstra", self.dijkstra.run)]
