@@ -23,7 +23,7 @@ class Game:
         self.weights = []
         self.active = None
         self.consumed_names = set()
-        self.dijkstra = Dijkstra(self.nodes, self.weights, self.draw)
+        self.dijkstra = Dijkstra(self.nodes, self.weights)
         self.buttons = [Button(pygame.Rect(400, 200, 140, 32), "start", self.set_node_start),
                         Button(pygame.Rect(600, 200, 140, 32), "end", self.set_node_end),
                         Button(pygame.Rect(800, 200, 140, 32), "dijkstra", self.dijkstra.run)]
