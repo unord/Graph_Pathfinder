@@ -1,6 +1,24 @@
 import pygame
 
 
+class Timeline:
+    def __init__(self, paths, current_path, draw, window):
+        self.paths = paths
+        self.current_path = current_path
+        self.fastest_path = None
+        self.draw = draw
+        self.window = window
+    
+    def next_path(self):
+        pass
+
+    def prev_path(self):
+        pass
+
+    def draw_path(self):
+        self.draw(self.current_path)
+
+
 class Path:
     def __init__(self, nodes, weights, new_node, new_weight=None):
         self.nodes = nodes[:]
