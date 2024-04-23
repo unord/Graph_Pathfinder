@@ -6,60 +6,24 @@ from algo import Dijkstra
 from string import ascii_uppercase as alphabet
 
 
-class UI:
+class Game:
     def __init__(self):
         ctypes.windll.user32.SetProcessDPIAware()
         pygame.init()
         self.bg_color = (100, 100, 240, 0.5)
         self.info = pygame.display.Info()
         self.WIDTH, self.HEIGHT = self.info.current_w, self.info.current_h
-
         self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT), flags=pygame.FULLSCREEN)
         pygame.display.set_caption('Graph Visualizer')
         self.text_input = TextInput()
-
-        self.buttons = []
         self.nodes = []
         self.weights = []
-
-    def draw(self) -> None:
-        """
-        Draw the scene.
-
-        :return: None
-        """
-
-        self.window.fill(self.bg_color)
-
-        for weight in self.weights:
-            weight.draw(self.window)
-
-        for node in self.nodes:
-            node.draw(self.window)
-
-        for button in self.buttons:
-            button.draw(self.window)
-
-        self.text_input.draw(self.window)
-        pygame.display.update()
-
-
-class Game:
-    def __init__(self):
         self.active = None
         self.consumed_names = set()
-
-        self.ui = UI()
-        self.nodes = self.ui.nodes
-        self.weights = self.ui.weights
-        self.buttons = self.ui.buttons
-        self.text_input = self.ui.text_input
-
         self.dijkstra = Dijkstra(self.nodes, self.weights)
-
-        self.buttons.append(Button(pygame.Rect(400, 200, 140, 32), "start", self.set_node_start))
-        self.buttons.append(Button(pygame.Rect(600, 200, 140, 32), "end", self.set_node_end))
-        self.buttons.append(Button(pygame.Rect(800, 200, 140, 32), "dijkstra", self.dijkstra.run))
+        self.buttons = [Button(pygame.Rect(400, 200, 140, 32), "start", self.set_node_start),
+                        Button(pygame.Rect(600, 200, 140, 32), "end", self.set_node_end),
+                        Button(pygame.Rect(800, 200, 140, 32), "dijkstra", self.dijkstra.run)]
     
     def quit_func(self, event: pygame.event.Event) -> None:
         """
@@ -300,6 +264,27 @@ class Game:
                         self.set_active(curr)
                         self.weights.append(curr)
 
+    def draw(self) -> None:
+        """
+        Draw the scene.
+
+        :return: None
+        """
+
+        self.window.fill(self.bg_color)
+
+        for weight in self.weights:
+            weight.draw(self.window)
+
+        for node in self.nodes:
+            node.draw(self.window)
+
+        for button in self.buttons:
+            button.draw(self.window)
+
+        self.text_input.draw(self.window)
+        pygame.display.update()
+
     def main(self) -> None:
         """
         Main function loop.
@@ -317,7 +302,7 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONUP:
                     self.set_weight(event)
 
-            self.ui.draw()
+            self.draw()
 
 
 if __name__ == "__main__":
