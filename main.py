@@ -4,6 +4,16 @@ import sys
 from classes import Node, TextInput, Weight, Button
 from algo import Dijkstra
 from string import ascii_uppercase as alphabet
+from timeline import Timeline
+
+
+class UIObjects:
+    def __init__(self):
+        self.nodes = []
+        self.weights = []
+        self.text_input = TextInput()
+        self.buttons = []
+        self.algo_buttons = []
 
 
 class Game:
@@ -15,16 +25,24 @@ class Game:
         self.WIDTH, self.HEIGHT = self.info.current_w, self.info.current_h
         self.window = pygame.display.set_mode((self.WIDTH, self.HEIGHT), flags=pygame.FULLSCREEN)
         pygame.display.set_caption('Graph Visualizer')
-        self.text_input = TextInput()
-        self.nodes = []
-        self.weights = []
         self.active = None
         self.consumed_names = set()
+
+        self.ui = UIObjects()
+
+        self.nodes = self.ui.nodes
+        self.weights = self.ui.weights
+        self.text_input = self.ui.text_input
+        self.buttons = self.ui.buttons
+        self.algo_buttons = self.ui.algo_buttons
+
+        self.buttons.append(Button(pygame.Rect(400, 200, 140, 32), "start", self.set_node_start))
+        self.buttons.append(Button(pygame.Rect(600, 200, 140, 32), "end", self.set_node_end))
+
         self.dijkstra = Dijkstra(self.nodes, self.weights)
-        self.buttons = [Button(pygame.Rect(400, 200, 140, 32), "start", self.set_node_start),
-                        Button(pygame.Rect(600, 200, 140, 32), "end", self.set_node_end),
-                        Button(pygame.Rect(800, 200, 140, 32), "dijkstra", self.dijkstra.run)]
-    
+
+        self.algo_buttons.append(Button(pygame.Rect(800, 200, 140, 32), "dijkstra", self.dijkstra.run))
+
     def quit_func(self, event: pygame.event.Event) -> None:
         """
         Checks event for quit-condition and exits if detected.
@@ -149,6 +167,18 @@ class Game:
 
         for button in self.buttons:
             if button.clicked(event.pos):
+                button.func(*button.args)
+                return False
+
+        for button in self.algo_buttons:
+            if button.clicked(event.pos):
+                resp = button.func(*button.args)
+
+                if not resp:
+                    return False
+
+                t = Timeline(self.window, self.ui, resp)
+                t.main()
                 return False
 
         # Iterate all nodes and detect presses
@@ -280,6 +310,9 @@ class Game:
             node.draw(self.window)
 
         for button in self.buttons:
+            button.draw(self.window)
+
+        for button in self.algo_buttons:
             button.draw(self.window)
 
         self.text_input.draw(self.window)

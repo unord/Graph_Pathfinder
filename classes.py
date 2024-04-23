@@ -15,11 +15,7 @@ class Button:
         self.active_color = pygame.Color("yellow")
 
     def clicked(self, pos):
-        if self.rect.collidepoint(pos):
-            self.func(*self.args)
-            return True
-        
-        return False
+        return self.rect.collidepoint(pos)
     
     def draw(self, window):
         if self.state:

@@ -1,37 +1,23 @@
 import pygame
 
 
-class Timeline:
-    def __init__(self, paths, current_path, draw, window):
-        self.paths = paths
-        self.current_path = current_path
-        self.fastest_path = None
-        self.draw = draw
-        self.window = window
-    
-    def next_path(self):
-        pass
-
-    def prev_path(self):
-        pass
-
-    def draw_path(self):
-        self.draw(self.current_path)
-
-
 class Path:
-    def __init__(self, nodes, weights, new_node, new_weight=None):
-        self.nodes = nodes[:]
-        self.weights = weights[:]
+    def __init__(self, new_node, new_weight=None, prev_path=None):
+        if prev_path:
+            self.nodes = prev_path.nodes[:]
+            self.weights = prev_path.weights[:]
+            self.length = prev_path.length
+        else:
+            self.nodes = []
+            self.weights = []
+            self.length = 0
+
         self.curr_node = new_node
         self.nodes.append(new_node)
 
         if new_weight is not None:
             self.weights.append(new_weight)
-
-    @property
-    def length(self):
-        return sum(int(weight.length) for weight in self.weights)
+            self.length += int(new_weight.length)
 
 
 class Dijkstra:
@@ -72,7 +58,7 @@ class Dijkstra:
 
     def explore_weight(self, path, weight):
         other = weight.get_other_node(path.curr_node)
-        new_path = Path(path.nodes, path.weights, other, weight)
+        new_path = Path(other, weight, path)
 
         if other in self.fastest_paths:
             if new_path.length >= self.fastest_paths[other].length:
@@ -87,7 +73,7 @@ class Dijkstra:
         start_node = self.find_start()
         end_node = self.find_end()
 
-        start_path = Path([], [], start_node, None)
+        start_path = Path(start_node)
         self.curr_paths.append(start_path)
 
         self.fastest_paths[start_node] = start_path
@@ -103,4 +89,6 @@ class Dijkstra:
             self.curr_paths = self.new_paths[:]
             self.new_paths.clear()
 
-        return end_node in self.fastest_paths
+        if end_node in self.fastest_paths:
+            return self.recording
+        return False
