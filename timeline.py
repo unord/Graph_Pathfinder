@@ -1,4 +1,5 @@
 import pygame
+import sys
 
 
 class Timeline:
@@ -14,7 +15,25 @@ class Timeline:
         self.algo_buttons = self.ui.algo_buttons
 
         self.timeline = timeline
-        print(self.timeline)
+        self.current_pos = 0
+        self.draw_path()
+        for path in self.timeline:
+            for node in path.nodes:
+                print(node.name)
+            print("")
+
+    def quit_func(self, event: pygame.event.Event) -> None:
+        """
+        Checks event for quit-condition and exits if detected.
+
+        :param event: Event to check
+        :return: None
+        """
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                sys.exit()
 
     def draw(self) -> None:
         """
@@ -40,6 +59,30 @@ class Timeline:
         self.text_input.draw(self.window)
         pygame.display.update()
 
+    def draw_path(self):
+        path = self.timeline[self.current_pos]
+
+        for node in path.nodes:
+
+            if node.is_start:
+                node.set_name("0")
+
+            elif node is path.nodes[-1]:
+                node.set_name(str(path.length))
+
+
+    def on_keypress(self, event) -> None:
+        if event.key == pygame.K_LEFT:
+            if self.current_pos > 0:
+                self.current_pos -= 1
+            
+        elif event.key == pygame.K_RIGHT:
+
+            if self.current_pos < len(self.timeline) - 1:
+                self.current_pos += 1
+
+        self.draw_path()
+
     def main(self) -> None:
         """
         Main function loop.
@@ -48,5 +91,8 @@ class Timeline:
         """
 
         while True:
-
+            for event in pygame.event.get():
+                self.quit_func(event)
+                if event.type == pygame.KEYDOWN:
+                    self.on_keypress(event)
             self.draw()
