@@ -40,6 +40,7 @@ class Path:
     def estimated_length(self):
         return self.length + self.heu_length
 
+
 class Dijkstra:
     def __init__(self, nodes: list[Node], weights: list[Weight]):
         self.nodes = nodes
@@ -183,7 +184,6 @@ class AStar:
 
         while self.end_node not in self.fastest_paths:
             self.cand_paths = sorted(self.cand_paths, key=lambda path: path.estimated_length, reverse=True)
-            print(["".join(node.name for node in path.nodes) for path in self.cand_paths])
             optimal_candidate = self.cand_paths.pop()
 
             if optimal_candidate.curr_node in self.fastest_paths:
@@ -192,6 +192,8 @@ class AStar:
 
             self.fastest_paths[optimal_candidate.curr_node] = optimal_candidate
             self.curr_paths.append(optimal_candidate)
+
+            self.recording.append(optimal_candidate)
             self.find_candidates(optimal_candidate)
 
         if self.end_node in self.fastest_paths:
