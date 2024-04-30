@@ -1,8 +1,9 @@
 import pygame
+from classes import Node, Weight
 
 
 class Path:
-    def __init__(self, new_node, new_weight=None, prev_path=None):
+    def __init__(self, new_node: Node, new_weight: Weight = None, prev_path=None):
         if prev_path:
             self.nodes = prev_path.nodes[:]
             self.weights = prev_path.weights[:]
@@ -21,7 +22,7 @@ class Path:
 
 
 class Dijkstra:
-    def __init__(self, nodes, weights):
+    def __init__(self, nodes: list[Node], weights: list[Weight]):
         self.nodes = nodes
         self.weights = weights
 
@@ -31,14 +32,14 @@ class Dijkstra:
 
         self.recording = []
 
-    def find_start(self):
+    def find_start(self) -> Node | bool:
         for node in self.nodes:
             if node.is_start:
                 return node
 
         return False
 
-    def find_end(self):
+    def find_end(self) -> Node | bool:
         for node in self.nodes:
             if node.is_end:
                 return node
@@ -50,13 +51,13 @@ class Dijkstra:
         self.curr_paths = []
         self.new_paths = []
 
-    def new_path(self, dest_node, path):
+    def new_path(self, dest_node: Node, path: Path):
         self.fastest_paths[dest_node] = path
         self.new_paths.append(path)
 
         self.recording.append(path)
 
-    def explore_weight(self, path, weight):
+    def explore_weight(self, path: Path, weight: Weight) -> bool:
         other = weight.get_other_node(path.curr_node)
         new_path = Path(other, weight, path)
 
@@ -67,7 +68,7 @@ class Dijkstra:
         self.new_path(other, new_path)
         return True
 
-    def run(self):
+    def run(self) -> list[Path] | bool:
         self.clear()
 
         start_node = self.find_start()
