@@ -40,7 +40,6 @@ class Path:
     def estimated_length(self):
         return self.length + self.heu_length
 
-
 class Dijkstra:
     def __init__(self, nodes: list[Node], weights: list[Weight]):
         self.nodes = nodes

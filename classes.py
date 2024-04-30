@@ -120,6 +120,7 @@ class Node:
         self.rect = None
         self.width = 5
         self.name = name
+        self.origin_name = name
         self.r = 26
         self.is_start = False
         self.is_end = False
@@ -131,6 +132,9 @@ class Node:
 
     def set_name(self, name):
         self.name = name
+    
+    def set_name_origin(self):
+        self.name = self.origin_name
 
     def add_weight(self, weight):
         self.weights.append(weight)
