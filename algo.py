@@ -3,7 +3,7 @@ from classes import Node, Weight
 
 
 class Path:
-    def __init__(self, new_node: Node, new_weight: Weight = None, prev_path=None):
+    def __init__(self, new_node: Node, new_weight: Weight = None, prev_path=None, heu_length: int = None):
         if prev_path:
             self.nodes = prev_path.nodes[:]
             self.weights = prev_path.weights[:]
@@ -19,6 +19,26 @@ class Path:
         if new_weight is not None:
             self.weights.append(new_weight)
             self.length += int(new_weight.length)
+
+        self.heu_length = 0
+        if heu_length:
+            self.heu_length = heu_length
+
+    def length_to_node(self, search_node: Node) -> int | None:
+        n = 0
+
+        if search_node == self.nodes[0]:
+            return 0
+
+        for i in range(1, len(self.nodes)):
+            n += self.weights[i - 1].length
+
+            if self.nodes[i] == search_node:
+                return n
+
+    @property
+    def estimated_length(self):
+        return self.length + self.heu_length
 
 
 class Dijkstra:
@@ -91,5 +111,91 @@ class Dijkstra:
             self.new_paths.clear()
 
         if end_node in self.fastest_paths:
+            return self.recording
+        return False
+
+
+class AStar:
+    def __init__(self, nodes: list[Node], weights: list[Weight]):
+        self.nodes = nodes
+        self.weights = weights
+
+        self.curr_paths = []
+        self.cand_paths = []
+        self.fastest_paths = {}
+
+        self.start_node = None
+        self.end_node = None
+
+        self.recording = []
+
+    @staticmethod
+    def estimate_distance(node1: Node, node2: Node) -> int:
+        diff_x = abs(node1.pos[1] - node2.pos[1])
+        diff_y = abs(node1.pos[0] - node2.pos[0])
+        return int((diff_x**2 + diff_y**2)**0.5) // 150
+
+    def find_start(self) -> Node | bool:
+        for node in self.nodes:
+            if node.is_start:
+                return node
+
+        return False
+
+    def find_end(self) -> Node | bool:
+        for node in self.nodes:
+            if node.is_end:
+                return node
+
+        return False
+
+    def clear(self):
+        self.curr_paths = []
+        self.cand_paths = []
+        self.fastest_paths = {}
+
+        self.start_node = None
+        self.end_node = None
+
+    def find_candidates(self, path):
+        for weight in path.curr_node.weights:
+            other = weight.get_other_node(path.curr_node)
+            new_path = Path(other, weight, path, self.estimate_distance(other, self.end_node))
+
+            if other in self.fastest_paths:
+                if new_path.length >= self.fastest_paths[other].length:
+                    continue
+
+            self.cand_paths.append(new_path)
+
+            # print(", ".join(node.name for node in new_path.nodes))
+
+    def run(self):
+        self.clear()
+
+        self.start_node = self.find_start()
+        self.end_node = self.find_end()
+
+        start_path = Path(self.start_node, heu_length=self.estimate_distance(self.start_node, self.end_node))
+        self.curr_paths.append(start_path)
+        self.find_candidates(start_path)
+
+        self.fastest_paths[self.start_node] = start_path
+
+        while self.end_node not in self.fastest_paths:
+            self.cand_paths = sorted(self.cand_paths, key=lambda path: path.estimated_length, reverse=True)
+            print(["".join(node.name for node in path.nodes) for path in self.cand_paths])
+            optimal_candidate = self.cand_paths.pop()
+
+            if optimal_candidate.curr_node in self.fastest_paths:
+                if optimal_candidate.length >= self.fastest_paths[optimal_candidate.curr_node].length:
+                    continue
+
+            self.fastest_paths[optimal_candidate.curr_node] = optimal_candidate
+            self.curr_paths.append(optimal_candidate)
+            self.find_candidates(optimal_candidate)
+
+        if self.end_node in self.fastest_paths:
+            print("".join(node.name for node in self.fastest_paths[self.end_node].nodes))
             return self.recording
         return False
