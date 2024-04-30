@@ -19,7 +19,10 @@ class Path:
         if new_weight is not None:
             self.weights.append(new_weight)
             self.length += int(new_weight.length)
-
+    
+    def len_to_node(self, node) -> int:
+        if node in self.nodes:
+            
 
 class Dijkstra:
     def __init__(self, nodes: list[Node], weights: list[Weight]):

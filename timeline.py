@@ -16,7 +16,6 @@ class Timeline:
 
         self.timeline = timeline
         self.current_pos = 0
-        self.draw_path()
         for path in self.timeline:
             for node in path.nodes:
                 print(node.name)
@@ -59,29 +58,40 @@ class Timeline:
         self.text_input.draw(self.window)
         pygame.display.update()
 
-    def draw_path(self):
+    def back(self):
         path = self.timeline[self.current_pos]
 
-        for node in path.nodes:
+        for node in self.nodes:
+            if node in path.nodes:
+                if node.is_start:
+                    node.set_name("0")
+                else:
+                    node.set_name(str(path.len_to_node(node)))
+            else:
+                node.set_name_origin()
 
-            if node.is_start:
-                node.set_name("0")
+    def forward(self):
+        path = self.timeline[self.current_pos]
 
-            elif node is path.nodes[-1]:
-                node.set_name(str(path.length))
-
+        for node in self.nodes:
+            if node in path.nodes:
+                if node.is_start:
+                    node.set_name("0")
+                else:
+                    node.set_name(str(path.len_to_node(node)))
 
     def on_keypress(self, event) -> None:
         if event.key == pygame.K_LEFT:
             if self.current_pos > 0:
                 self.current_pos -= 1
+                self.back()
             
         elif event.key == pygame.K_RIGHT:
 
             if self.current_pos < len(self.timeline) - 1:
                 self.current_pos += 1
+                self.forward()
 
-        self.draw_path()
 
     def main(self) -> None:
         """
