@@ -2,7 +2,7 @@ import pygame
 import ctypes
 import sys
 from classes import Node, TextInput, Weight, Button
-from algo import Dijkstra, AStar
+from algo import BFS, AStar
 from string import ascii_uppercase as alphabet
 from timeline import Timeline
 
@@ -39,10 +39,10 @@ class Game:
         self.buttons.append(Button(pygame.Rect(400, 200, 140, 32), "start", self.set_node_start))
         self.buttons.append(Button(pygame.Rect(600, 200, 140, 32), "end", self.set_node_end))
 
-        self.dijkstra = Dijkstra(self.nodes, self.weights)
+        self.dijkstra = BFS(self.nodes, self.weights)
         self.astar = AStar(self.nodes, self.weights)
 
-        self.algo_buttons.append(Button(pygame.Rect(800, 200, 140, 32), "dijkstra", self.dijkstra.run))
+        self.algo_buttons.append(Button(pygame.Rect(800, 200, 140, 32), "BFS", self.dijkstra.run))
         self.algo_buttons.append(Button(pygame.Rect(1000, 200, 140, 32), "a-star", self.astar.run))
 
     def quit_func(self, event: pygame.event.Event) -> None:

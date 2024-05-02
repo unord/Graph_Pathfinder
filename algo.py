@@ -41,7 +41,7 @@ class Path:
         return self.length + self.heu_length
 
 
-class Dijkstra:
+class BFS:
     def __init__(self, nodes: list[Node], weights: list[Weight]):
         self.nodes = nodes
         self.weights = weights
