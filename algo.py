@@ -31,7 +31,7 @@ class Path:
             return 0
 
         for i in range(1, len(self.nodes)):
-            n += self.weights[i - 1].length
+            n += int(self.weights[i - 1].length)
 
             if self.nodes[i] == search_node:
                 return n

@@ -16,6 +16,8 @@ class Timeline:
 
         self.timeline = timeline
         self.current_pos = 0
+        self.current_path = timeline[0]
+        self.active_paths = []
         for path in self.timeline:
             for node in path.nodes:
                 print(node.name)
@@ -58,39 +60,59 @@ class Timeline:
         self.text_input.draw(self.window)
         pygame.display.update()
 
-    def back(self):
-        path = self.timeline[self.current_pos]
+# lav back og forward om hvor du bruger current_path og active_paths til at tegne
 
+    def back(self):
+        self.current_pos -= 1 if self.current_pos > 0 else 0
+        self.active_paths = self.active_paths[:-1]
+
+        if self.active_paths:
+            self.current_path = self.active_paths[-1]
+        else:
+            self.current_path = None
+        
         for node in self.nodes:
-            if node in path.nodes:
-                if node.is_start:
-                    node.set_name("0")
-                else:
-                    node.set_name(str(path.len_to_node(node)))
-            else:
-                node.set_name_origin()
+            node.set_name_origin()
+
+        for path in self.active_paths:
+            for node in path.nodes:
+                node.set_name(str(path.length_to_node(node)))
+        
+        for weight in self.weights:
+            weight.set_default()
+        
+        for path in self.active_paths:
+            for weight in path.weights:
+                weight.set_searched()
+        
+        if self.current_path is not None:
+            for weight in self.current_path.weights:
+                weight.set_searching()
 
     def forward(self):
-        path = self.timeline[self.current_pos]
+        self.current_path = self.timeline[self.current_pos]
+        self.active_paths.append(self.current_path)
+        for node in self.current_path.nodes:
+            node.set_name(str(self.current_path.length_to_node(node)))
 
-        for node in self.nodes:
-            if node in path.nodes:
-                if node.is_start:
-                    node.set_name("0")
-                else:
-                    node.set_name(str(path.len_to_node(node)))
+        for path in self.active_paths:
+            if path is not self.current_path:
+                for weight in path.weights:
+                    weight.is_searching = False
+                    weight.is_searched = True
+
+        for weight in self.current_path.weights:
+            weight.is_searching = True
+            weight.is_searched = False
+
+        self.current_pos += 1 if self.current_pos < len(self.timeline) - 1 else 0
 
     def on_keypress(self, event) -> None:
         if event.key == pygame.K_LEFT:
-            if self.current_pos > 0:
-                self.current_pos -= 1
-                self.back()
+            self.back()
             
         elif event.key == pygame.K_RIGHT:
-
-            if self.current_pos < len(self.timeline) - 1:
-                self.current_pos += 1
-                self.forward()
+            self.forward()
 
 
     def main(self) -> None:

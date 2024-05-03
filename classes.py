@@ -85,6 +85,11 @@ class Weight:
         self.text_surface = None
         self.text_color = pygame.Color("black")
 
+        self.search_color = pygame.Color("red")
+        self.searching_color = pygame.Color("green")
+        self.is_searched = False
+        self.is_searching = False
+
     def clicked(self, pos):
         click_rect = pygame.rect.Rect(pos[0] - 15, pos[1] - 15, 30, 30)
         return click_rect.clipline(self.start_node.pos, self.end_node.pos)
@@ -92,14 +97,31 @@ class Weight:
     def set_length(self, num):
         self.length = num
 
+    def set_searched(self):
+        self.is_searching = False
+        self.is_searched = True
+
+    def set_searching(self):
+        self.is_searched = False
+        self.is_searching = True
+
     def get_other_node(self, node):
         if node is self.start_node:
             return self.end_node
         return self.start_node
 
+    def set_default(self):
+        self.is_searched = False
+        self.is_searching = False
+        self.state = False
+
     def draw(self, window):
         if self.state:
             self.rect = pygame.draw.line(window, self.active_color, self.start_node.pos, self.end_node.pos, self.width)
+        elif self.is_searching:
+            self.rect = pygame.draw.line(window, self.searching_color, self.start_node.pos, self.end_node.pos, self.width)
+        elif self.is_searched:
+            self.rect = pygame.draw.line(window, self.search_color, self.start_node.pos, self.end_node.pos, self.width)
         else:
             self.rect = pygame.draw.line(window, self.passive_color, self.start_node.pos, self.end_node.pos, self.width)
 
