@@ -103,12 +103,10 @@ class Timeline:
         for path in self.active_paths:
             if path is not self.current_path:
                 for weight in path.weights:
-                    weight.is_searching = False
-                    weight.is_searched = True
+                    weight.set_searched()
 
         for weight in self.current_path.weights:
-            weight.is_searching = True
-            weight.is_searched = False
+            weight.set_searching()
 
     def on_keypress(self, event) -> None:
         if event.key == pygame.K_LEFT:
