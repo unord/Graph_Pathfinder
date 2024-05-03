@@ -40,15 +40,11 @@ class Path:
     def estimated_length(self):
         return self.length + self.heu_length
 
-class Dijkstra:
+
+class Algorithm:
     def __init__(self, nodes: list[Node], weights: list[Weight]):
         self.nodes = nodes
         self.weights = weights
-
-        self.fastest_paths = {}
-        self.curr_paths = []
-        self.new_paths = []
-
         self.recording = []
 
     def find_start(self) -> Node | bool:
@@ -64,6 +60,61 @@ class Dijkstra:
                 return node
 
         return False
+
+
+class Dijkstra(Algorithm):
+    def __init__(self, nodes: list[Node], weights: list[Weight]):
+        self.fastest_paths = {}
+        self.curr_paths = []
+
+        super().__init__(nodes, weights)
+
+    def clear(self):
+        self.fastest_paths = {}
+        self.curr_paths = []
+
+    def explore_path(self, path: Path, weight: Weight):
+        other = weight.get_other_node(path.curr_node)
+        new_path = Path(other, weight, path)
+
+        if other in self.fastest_paths:
+            if new_path.length >= self.fastest_paths[other].length:
+                return
+
+        self.fastest_paths[other] = new_path
+        self.curr_paths.append(new_path)
+        self.recording.append(new_path)
+
+    def run(self):
+        self.clear()
+
+        start_node = self.find_start()
+        end_node = self.find_end()
+
+        start_path = Path(start_node)
+        self.curr_paths.append(start_path)
+
+        self.fastest_paths[start_node] = start_path
+
+        while self.curr_paths:
+            self.curr_paths = sorted(self.curr_paths, key=lambda path: path.length, reverse=True)
+            shortest_path = self.curr_paths.pop()
+
+            for weight in shortest_path.curr_node.weights:
+                self.explore_path(shortest_path, weight)
+
+        if end_node in self.fastest_paths:
+            return self.recording
+        return False
+
+
+class BFS(Algorithm):
+    def __init__(self, nodes: list[Node], weights: list[Weight]):
+        self.fastest_paths = {}
+        self.curr_paths = []
+        self.new_paths = []
+
+        super().__init__(nodes, weights)
 
     def clear(self):
         self.fastest_paths = {}
@@ -114,11 +165,8 @@ class Dijkstra:
         return False
 
 
-class AStar:
+class AStar(Algorithm):
     def __init__(self, nodes: list[Node], weights: list[Weight]):
-        self.nodes = nodes
-        self.weights = weights
-
         self.curr_paths = []
         self.cand_paths = []
         self.fastest_paths = {}
@@ -126,27 +174,13 @@ class AStar:
         self.start_node = None
         self.end_node = None
 
-        self.recording = []
+        super().__init__(nodes, weights)
 
     @staticmethod
     def estimate_distance(node1: Node, node2: Node) -> int:
         diff_x = abs(node1.pos[1] - node2.pos[1])
         diff_y = abs(node1.pos[0] - node2.pos[0])
         return int((diff_x**2 + diff_y**2)**0.5) // 150
-
-    def find_start(self) -> Node | bool:
-        for node in self.nodes:
-            if node.is_start:
-                return node
-
-        return False
-
-    def find_end(self) -> Node | bool:
-        for node in self.nodes:
-            if node.is_end:
-                return node
-
-        return False
 
     def clear(self):
         self.curr_paths = []
@@ -183,7 +217,6 @@ class AStar:
 
         while self.end_node not in self.fastest_paths:
             self.cand_paths = sorted(self.cand_paths, key=lambda path: path.estimated_length, reverse=True)
-            print(["".join(node.name for node in path.nodes) for path in self.cand_paths])
             optimal_candidate = self.cand_paths.pop()
 
             if optimal_candidate.curr_node in self.fastest_paths:
@@ -192,9 +225,10 @@ class AStar:
 
             self.fastest_paths[optimal_candidate.curr_node] = optimal_candidate
             self.curr_paths.append(optimal_candidate)
+
+            self.recording.append(optimal_candidate)
             self.find_candidates(optimal_candidate)
 
         if self.end_node in self.fastest_paths:
-            print("".join(node.name for node in self.fastest_paths[self.end_node].nodes))
             return self.recording
         return False
