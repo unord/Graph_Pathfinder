@@ -15,7 +15,7 @@ class Timeline:
         self.algo_buttons = self.ui.algo_buttons
 
         self.timeline = timeline
-        self.current_pos = 0
+        self.current_pos = -1
         self.current_path = timeline[0]
         self.active_paths = []
         for path in self.timeline:
@@ -63,7 +63,10 @@ class Timeline:
 # lav back og forward om hvor du bruger current_path og active_paths til at tegne
 
     def back(self):
-        self.current_pos -= 1 if self.current_pos > 0 else 0
+        if self.current_pos < 0:
+            return
+        
+        self.current_pos -= 1
         self.active_paths = self.active_paths[:-1]
 
         if self.active_paths:
@@ -90,6 +93,10 @@ class Timeline:
                 weight.set_searching()
 
     def forward(self):
+        if self.current_pos >= len(self.timeline) - 1:
+            return
+        
+        self.current_pos += 1
         self.current_path = self.timeline[self.current_pos]
         self.active_paths.append(self.current_path)
         for node in self.current_path.nodes:
@@ -104,8 +111,6 @@ class Timeline:
         for weight in self.current_path.weights:
             weight.is_searching = True
             weight.is_searched = False
-
-        self.current_pos += 1 if self.current_pos < len(self.timeline) - 1 else 0
 
     def on_keypress(self, event) -> None:
         if event.key == pygame.K_LEFT:
