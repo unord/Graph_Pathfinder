@@ -60,8 +60,6 @@ class Timeline:
         self.text_input.draw(self.window)
         pygame.display.update()
 
-# lav back og forward om hvor du bruger current_path og active_paths til at tegne
-
     def back(self):
         if self.current_pos < 0:
             return
