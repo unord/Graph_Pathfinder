@@ -18,23 +18,34 @@ class Timeline:
         self.current_pos = -1
         self.current_path = timeline[0]
         self.active_paths = []
-        for path in self.timeline:
-            for node in path.nodes:
-                print(node.name)
-            print("")
 
-    def quit_func(self, event: pygame.event.Event) -> None:
+        if not self.timeline[-1].nodes[-1].is_end:
+            solution = None
+            for path in self.timeline:
+                if path.nodes[-1].is_end:
+                    solution = path
+            self.timeline.append(solution)
+
+    def quit_func(self, event: pygame.event.Event) -> bool:
         """
         Checks event for quit-condition and exits if detected.
 
         :param event: Event to check
         :return: None
         """
-
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
+            elif event.key == pygame.K_BACKSPACE:
+                for weight in self.weights:
+                    weight.set_default()
+                
+                for node in self.nodes:
+                    node.set_name_origin()
+                    
+                return False
+        return True
 
     def draw(self) -> None:
         """
@@ -75,14 +86,13 @@ class Timeline:
         for node in self.nodes:
             node.set_name_origin()
 
+        for weight in self.weights:
+            weight.set_default()
+
         for path in self.active_paths:
             for node in path.nodes:
                 node.set_name(str(path.length_to_node(node)))
-        
-        for weight in self.weights:
-            weight.set_default()
-        
-        for path in self.active_paths:
+
             for weight in path.weights:
                 weight.set_searched()
         
@@ -123,9 +133,10 @@ class Timeline:
         :return: None
         """
 
-        while True:
+        run = True
+        while run:
             for event in pygame.event.get():
-                self.quit_func(event)
+                run = self.quit_func(event)
                 if event.type == pygame.KEYDOWN:
                     self.on_keypress(event)
             self.draw()
