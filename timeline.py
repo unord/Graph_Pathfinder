@@ -3,16 +3,11 @@ import sys
 
 
 class Timeline:
-    def __init__(self, window, ui, timeline):
-        self.bg_color = (100, 100, 240, 0.5)
-        self.window = window
+    def __init__(self, ui, timeline):
         self.ui = ui
 
         self.nodes = self.ui.nodes
         self.weights = self.ui.weights
-        self.text_input = self.ui.text_input
-        self.buttons = self.ui.buttons
-        self.algo_buttons = self.ui.algo_buttons
 
         self.timeline = timeline
         self.current_pos = -1
@@ -40,41 +35,17 @@ class Timeline:
             elif event.key == pygame.K_BACKSPACE:
                 for weight in self.weights:
                     weight.set_default()
-                
+
                 for node in self.nodes:
                     node.set_name_origin()
-                    
+
                 return False
         return True
-
-    def draw(self) -> None:
-        """
-        Draw the scene.
-
-        :return: None
-        """
-
-        self.window.fill(self.bg_color)
-
-        for weight in self.weights:
-            weight.draw(self.window)
-
-        for node in self.nodes:
-            node.draw(self.window)
-
-        for button in self.buttons:
-            button.draw(self.window)
-
-        for button in self.algo_buttons:
-            button.draw(self.window)
-
-        self.text_input.draw(self.window)
-        pygame.display.update()
 
     def back(self):
         if self.current_pos < 0:
             return
-        
+
         self.current_pos -= 1
         self.active_paths = self.active_paths[:-1]
 
@@ -82,7 +53,7 @@ class Timeline:
             self.current_path = self.active_paths[-1]
         else:
             self.current_path = None
-        
+
         for node in self.nodes:
             node.set_name_origin()
 
@@ -95,7 +66,7 @@ class Timeline:
 
             for weight in path.weights:
                 weight.set_searched()
-        
+
         if self.current_path is not None:
             for weight in self.current_path.weights:
                 weight.set_searching()
@@ -103,7 +74,7 @@ class Timeline:
     def forward(self):
         if self.current_pos >= len(self.timeline) - 1:
             return
-        
+
         self.current_pos += 1
         self.current_path = self.timeline[self.current_pos]
         self.active_paths.append(self.current_path)
@@ -121,10 +92,9 @@ class Timeline:
     def on_keypress(self, event) -> None:
         if event.key == pygame.K_LEFT:
             self.back()
-            
+
         elif event.key == pygame.K_RIGHT:
             self.forward()
-
 
     def main(self) -> None:
         """
@@ -139,4 +109,4 @@ class Timeline:
                 run = self.quit_func(event)
                 if event.type == pygame.KEYDOWN:
                     self.on_keypress(event)
-            self.draw()
+            self.ui.draw()
