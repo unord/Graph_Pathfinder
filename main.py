@@ -1,6 +1,6 @@
 import pygame
 import ctypes
-from classes import TextInput, Button
+from uiobjects import TextInput, Button, TextLabel, Line
 from editor import Editor
 
 
@@ -17,16 +17,33 @@ class UI:
 
         self.nodes = []
         self.weights = []
-        self.text_input = TextInput()
+        self.text_labels = []
         self.graph_buttons = []
         self.algo_buttons = []
+        self.timeline_buttons = []
+        self.lines = []
 
-        self.graph_buttons.append(Button(pygame.Rect(400, 200, 140, 32), "start", "BUTTON_GRAPH_START"))
-        self.graph_buttons.append(Button(pygame.Rect(600, 200, 140, 32), "end", "BUTTON_GRAPH_END"))
+        self.text_input = TextInput(pygame.Rect(50, 230, 120, 40))
 
-        self.algo_buttons.append(Button(pygame.Rect(800, 200, 140, 32), "Dijkstra", "BUTTON_ALGO_DIJKSTRA"))
-        self.algo_buttons.append(Button(pygame.Rect(1000, 200, 140, 32), "A-Star", "BUTTON_ALGO_ASTAR"))
-        self.algo_buttons.append(Button(pygame.Rect(1200, 200, 140, 32), "BFS", "BUTTON_ALGO_BFS"))
+        self.text_labels.append(TextLabel(pygame.Rect(50, 40, 120, 40), "Graph:"))
+        self.text_labels.append(TextLabel(pygame.Rect(50, 400, 120, 40), "Algorithms:"))
+        self.text_labels.append(TextLabel(pygame.Rect(50, 800, 120, 40), "Timeline:"))
+
+        self.graph_buttons.append(Button(pygame.Rect(50, 80, 120, 40), "Start", "BUTTON_GRAPH_START"))
+        self.graph_buttons.append(Button(pygame.Rect(50, 130, 120, 40), "End", "BUTTON_GRAPH_END"))
+        self.graph_buttons.append(Button(pygame.Rect(50, 180, 120, 40), "Delete", "BUTTON_GRAPH_DELETE"))
+
+        self.algo_buttons.append(Button(pygame.Rect(50, 440, 120, 40), "Dijkstra", "BUTTON_ALGO_DIJKSTRA"))
+        self.algo_buttons.append(Button(pygame.Rect(50, 490, 120, 40), "A-Star", "BUTTON_ALGO_ASTAR"))
+        self.algo_buttons.append(Button(pygame.Rect(50, 540, 120, 40), "BFS", "BUTTON_ALGO_BFS"))
+        self.algo_buttons.append(Button(pygame.Rect(50, 590, 120, 40), "DFS", "BUTTON_ALGO_DFS"))
+        self.algo_buttons.append(Button(pygame.Rect(50, 640, 120, 40), "Greedy", "BUTTON_ALGO_GREEDY"))
+
+        self.timeline_buttons.append(Button(pygame.Rect(50, 840, 120, 40), "Forward", "BUTTON_TIME_FORWARD"))
+        self.timeline_buttons.append(Button(pygame.Rect(50, 890, 120, 40), "Back", "BUTTON_TIME_BACK"))
+        self.timeline_buttons.append(Button(pygame.Rect(50, 940, 120, 40), "Stop", "BUTTON_TIME_STOP"))
+
+        self.lines.append(Line((220, 0), (220, self.HEIGHT)))
 
     def draw(self) -> None:
         """
@@ -48,6 +65,15 @@ class UI:
 
         for button in self.algo_buttons:
             button.draw(self.window)
+
+        for button in self.timeline_buttons:
+            button.draw(self.window)
+
+        for label in self.text_labels:
+            label.draw(self.window)
+
+        for line in self.lines:
+            line.draw(self.window)
 
         self.text_input.draw(self.window)
         pygame.display.update()

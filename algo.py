@@ -1,5 +1,5 @@
 import pygame
-from classes import Node, Weight
+from uiobjects import Node, Weight
 
 
 class Path:

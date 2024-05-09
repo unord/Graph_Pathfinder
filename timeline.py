@@ -8,11 +8,14 @@ class Timeline:
 
         self.nodes = self.ui.nodes
         self.weights = self.ui.weights
+        self.timeline_buttons = self.ui.timeline_buttons
 
         self.timeline = timeline
         self.current_pos = -1
         self.current_path = timeline[0]
         self.active_paths = []
+
+        self.running = None
 
         if not self.timeline[-1].nodes[-1].is_end:
             solution = None
@@ -21,26 +24,25 @@ class Timeline:
                     solution = path
             self.timeline.append(solution)
 
-    def quit_func(self, event: pygame.event.Event) -> bool:
-        """
-        Checks event for quit-condition and exits if detected.
+        callback_funcs = {
+            "BUTTON_TIME_FORWARD": self.forward,
+            "BUTTON_TIME_BACK": self.back,
+            "BUTTON_TIME_STOP": self.stop
+        }
 
-        :param event: Event to check
-        :return: None
-        """
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                pygame.quit()
-                sys.exit()
-            elif event.key == pygame.K_BACKSPACE:
-                for weight in self.weights:
-                    weight.set_default()
+        for button in self.timeline_buttons:
+            if button.identifier in callback_funcs:
+                print(button.identifier)
+                button.register_callback(callback_funcs[button.identifier])
 
-                for node in self.nodes:
-                    node.set_name_origin()
+    def stop(self):
+        for weight in self.weights:
+            weight.set_default()
 
-                return False
-        return True
+        for node in self.nodes:
+            node.set_name_origin()
+
+        self.running = False
 
     def back(self):
         if self.current_pos < 0:
@@ -89,12 +91,31 @@ class Timeline:
         for weight in self.current_path.weights:
             weight.set_searching()
 
+    def on_click(self, event: pygame.event.Event) -> None:
+        """
+        Handle mouse click event.
+
+        :param event: Mouse click event
+        :return: None
+        """
+
+        for button in self.timeline_buttons:
+            if button.clicked(event.pos):
+                button.callback()
+
     def on_keypress(self, event) -> None:
         if event.key == pygame.K_LEFT:
             self.back()
 
         elif event.key == pygame.K_RIGHT:
             self.forward()
+
+        elif event.key == pygame.K_ESCAPE:
+            pygame.quit()
+            sys.exit()
+
+        elif event.key == pygame.K_BACKSPACE:
+            self.stop()
 
     def main(self) -> None:
         """
@@ -103,10 +124,13 @@ class Timeline:
         :return: None
         """
 
-        run = True
-        while run:
+        self.running = True
+
+        while self.running:
             for event in pygame.event.get():
-                run = self.quit_func(event)
                 if event.type == pygame.KEYDOWN:
                     self.on_keypress(event)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    self.on_click(event)
+
             self.ui.draw()

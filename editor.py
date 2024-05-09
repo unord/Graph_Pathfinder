@@ -1,11 +1,9 @@
 import pygame
 import sys
-from classes import Node, Weight, Button
+from uiobjects import Node, Weight, Button
 from algo import BFS, AStar, Dijkstra
-from string import ascii_uppercase, ascii_lowercase
+from string import ascii_uppercase as alphabet
 from timeline import Timeline
-
-alphabet = ascii_uppercase
 
 
 class Editor:
@@ -28,9 +26,10 @@ class Editor:
         callback_funcs = {
             "BUTTON_GRAPH_START": self.set_node_start,
             "BUTTON_GRAPH_END": self.set_node_end,
+            "BUTTON_GRAPH_DELETE": self.delete_item,
             "BUTTON_ALGO_DIJKSTRA": self.dijkstra.run,
             "BUTTON_ALGO_ASTAR": self.astar.run,
-            "BUTTON_ALGO_BFS": self.bfs.run
+            "BUTTON_ALGO_BFS": self.bfs.run,
         }
 
         for button in self.graph_buttons:
@@ -40,20 +39,6 @@ class Editor:
         for button in self.algo_buttons:
             if button.identifier in callback_funcs:
                 button.register_callback(callback_funcs[button.identifier])
-
-    @staticmethod
-    def quit_func(event: pygame.event.Event) -> None:
-        """
-        Checks event for quit-condition and exits if detected.
-
-        :param event: Event to check
-        :return: None
-        """
-
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                pygame.quit()
-                sys.exit()
 
     @staticmethod
     def int_to_name(n):
@@ -101,7 +86,10 @@ class Editor:
         if any(char not in alphabet for char in name):
             return False
 
-        elif self.name_to_int(name) in self.consumed_names:
+        if len(name) > 3:
+            return False
+
+        if self.name_to_int(name) in self.consumed_names:
             return False
 
         return True
@@ -133,6 +121,36 @@ class Editor:
 
         self.active.is_end = True
         self.active.is_start = False
+
+    def delete_item(self):
+        # Selected item is a weight
+        if isinstance(self.active, Weight):
+            self.weights.remove(self.active)
+
+            # Ensure nodes are updated to not include references to weight
+            for node in self.nodes:
+                node.remove_weight(self.active)
+
+            self.set_active(None)
+            return
+
+        # Selected item is a node
+        elif isinstance(self.active, Node):
+            deleted = self.active
+            self.nodes.remove(self.active)
+            self.set_active(None)
+
+        else:
+            deleted = self.nodes.pop()
+
+        self.remove_name(deleted.name)
+
+        # Delete all connected weights and update nodes accordingly
+        for weight in deleted.weights:
+            for node in self.nodes:
+                node.remove_weight(weight)
+
+            self.weights.remove(weight)
 
     def set_active(self, new: Node | Weight | Button | None) -> None:
         """
@@ -167,6 +185,14 @@ class Editor:
         :param event: Event to be evaluated
         :return: Whether a new node should be created
         """
+
+        if self.text_input.state and not self.text_input.clicked(event.pos):
+            self.text_input.state = False
+            return False
+
+        if self.text_input.clicked(event.pos):
+            self.text_input.state = True
+            return False
 
         for button in self.graph_buttons:
             if button.clicked(event.pos):
@@ -209,15 +235,11 @@ class Editor:
         :return: None
         """
 
-        # Ensure text input field is not clicked
-        self.text_input.clicked(event)
-        if not self.text_input.state:
-
-            # Find selected items, and check if new node is to be created
-            if self.select_item(event):
-                new = Node(event, self.get_next_name())
-                self.nodes.append(new)
-                # self.set_active(new)  # Can be enabled to set new nodes activated
+        # Find selected items, and check if new node is to be created
+        if self.select_item(event):
+            new = Node(event, self.get_next_name())
+            self.nodes.append(new)
+            # self.set_active(new)  # Can be enabled to set new nodes activated
 
     def on_keypress(self, event: pygame.event.Event) -> None:
         """
@@ -226,6 +248,10 @@ class Editor:
         :param event: Keypress event
         :return: None
         """
+
+        if event.key == pygame.K_ESCAPE:
+            pygame.quit()
+            sys.exit()
 
         # If return key is pressed, update selected item value
         if event.key == pygame.K_RETURN:
@@ -242,35 +268,7 @@ class Editor:
 
         # If delete key is pressed, delete selected item or previous node
         elif event.key == pygame.K_DELETE:
-
-            # Selected item is a weight
-            if isinstance(self.active, Weight):
-                self.weights.remove(self.active)
-
-                # Ensure nodes are updated to not include references to weight
-                for node in self.nodes:
-                    node.remove_weight(self.active)
-
-                self.set_active(None)
-                return
-
-            # Selected item is a node
-            elif isinstance(self.active, Node):
-                deleted = self.active
-                self.nodes.remove(self.active)
-                self.set_active(None)
-
-            else:
-                deleted = self.nodes.pop()
-
-            self.remove_name(deleted.name)
-
-            # Delete all connected weights and update nodes accordingly
-            for weight in deleted.weights:
-                for node in self.nodes:
-                    node.remove_weight(weight)
-
-                self.weights.remove(weight)
+            self.delete_item()
 
         else:
 
@@ -292,6 +290,11 @@ class Editor:
 
                     # Find node that user unclicked on (dragged)
                     if node.clicked(event.pos):
+                        for weight in self.weights:
+                            if weight.is_similar(self.active, node):
+                                self.set_active(weight)
+                                return
+
                         curr = Weight(self.active, node)
 
                         # Add new weight to both connected nodes
@@ -310,7 +313,6 @@ class Editor:
 
         while True:
             for event in pygame.event.get():
-                self.quit_func(event)
                 if event.type == pygame.KEYDOWN:
                     self.on_keypress(event)
                 if event.type == pygame.MOUSEBUTTONDOWN:
