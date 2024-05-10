@@ -237,7 +237,7 @@ class Editor:
 
         # Find selected items, and check if new node is to be created
         if self.select_item(event):
-            new = Node(event, self.get_next_name())
+            new = Node(self.ui, event.pos, self.get_next_name())
             self.nodes.append(new)
             # self.set_active(new)  # Can be enabled to set new nodes activated
 
@@ -295,7 +295,7 @@ class Editor:
                                 self.set_active(weight)
                                 return
 
-                        curr = Weight(self.active, node)
+                        curr = Weight(self.ui, self.active, node)
 
                         # Add new weight to both connected nodes
                         self.active.add_weight(curr)
@@ -313,6 +313,9 @@ class Editor:
 
         while True:
             for event in pygame.event.get():
+                if hasattr(event, "pos"):
+                    event.pos = self.ui.get_virtual_cords(event.pos)
+
                 if event.type == pygame.KEYDOWN:
                     self.on_keypress(event)
                 if event.type == pygame.MOUSEBUTTONDOWN:

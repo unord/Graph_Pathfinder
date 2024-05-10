@@ -32,7 +32,6 @@ class Timeline:
 
         for button in self.timeline_buttons:
             if button.identifier in callback_funcs:
-                print(button.identifier)
                 button.register_callback(callback_funcs[button.identifier])
 
     def stop(self):

@@ -6,27 +6,28 @@ class Line:
 
     width = 3
 
-    def __init__(self, start_pos, end_pos):
+    def __init__(self, ui, start_pos, end_pos):
+        self.ui = ui
         self.start_pos = start_pos
         self.end_pos = end_pos
 
-    def draw(self, window):
-        pygame.draw.line(window, self.color_body, self.start_pos, self.end_pos, self.width)
+    def draw(self):
+        self.ui.draw_line(self.color_body, self.start_pos, self.end_pos, self.width)
 
 
 class TextLabel:
     color_text = pygame.Color("black")
 
-    def __init__(self, rect, text):
+    def __init__(self, ui, rect, text):
+        self.ui = ui
         self.rect = rect
         self.text = text
 
-        text_font = pygame.font.Font(None, 32)
-        self.text_surface = text_font.render(self.text, True, self.color_text)
-        self.text_rect = self.text_surface.get_rect(center=self.rect.center)
-
-    def draw(self, window):
-        window.blit(self.text_surface, self.text_rect)
+    def draw(self):
+        text_font = self.ui.get_font(None, 32)
+        text_surface = self.ui.font_render(text_font, self.text, True, self.color_text)
+        text_rect = self.ui.font_get_rect(text_surface, center=self.rect.center)
+        self.ui.blit(text_surface, text_rect)
 
 
 class Button:
@@ -34,16 +35,13 @@ class Button:
     color_body = pygame.Color("white")
     color_border = pygame.Color("black")
 
-    def __init__(self, rect, text, identifier):
+    def __init__(self, ui, rect, text, identifier):
+        self.ui = ui
         self.rect = rect
         self.text = text
         self.identifier = identifier
         self.func = None
         self.args = None
-
-        text_font = pygame.font.Font(None, 32)
-        self.text_surface = text_font.render(self.text, True, self.color_text)
-        self.text_rect = self.text_surface.get_rect(center=self.rect.center)
 
     def register_callback(self, func, *args):
         self.func = func
@@ -55,10 +53,13 @@ class Button:
     def clicked(self, pos):
         return self.rect.collidepoint(pos)
     
-    def draw(self, window):
-        pygame.draw.rect(window, self.color_body, self.rect)
-        pygame.draw.rect(window, self.color_border, self.rect, width=2)
-        window.blit(self.text_surface, self.text_rect)
+    def draw(self):
+        self.ui.draw_rect(self.color_body, self.rect)
+        self.ui.draw_rect(self.color_border, self.rect, width=2)
+        text_font = self.ui.get_font(None, 32)
+        text_surface = self.ui.font_render(text_font, self.text, True, self.color_text)
+        text_rect = self.ui.font_get_rect(text_surface, center=self.rect.center)
+        self.ui.blit(text_surface, text_rect)
 
 
 class TextInput:
@@ -67,12 +68,11 @@ class TextInput:
     color_text = pygame.Color("black")
     color_border = pygame.Color("black")
 
-    def __init__(self, rect):
+    def __init__(self, ui, rect):
+        self.ui = ui
         self.user_text = ""
         self.rect = rect
         self.state = False
-
-        self.text_font = pygame.font.Font(None, 32)
 
     def clicked(self, pos):
         return self.rect.collidepoint(pos)
@@ -84,16 +84,18 @@ class TextInput:
             else: 
                 self.user_text += event.unicode
 
-    def draw(self, window):
+    def draw(self):
         if self.state:
-            pygame.draw.rect(window, self.color_active, self.rect)
+            self.ui.draw_rect(self.color_active, self.rect)
         else:
-            pygame.draw.rect(window, self.color_passive, self.rect)
+            self.ui.draw_rect(self.color_passive, self.rect)
 
-        pygame.draw.rect(window, self.color_border, self.rect, width=2)
-        text_surface = self.text_font.render(self.user_text, True, self.color_text)
-        text_rect = text_surface.get_rect(centery=self.rect.centery, left=self.rect.left + 6)
-        window.blit(text_surface, text_rect, (max(text_rect.w - self.rect.w + 12, 0), 0, self.rect.w, self.rect.h))
+        self.ui.draw_rect(self.color_border, self.rect, width=2)
+
+        text_font = self.ui.get_font(None, 32)
+        text_surface = self.ui.font_render(text_font, self.user_text, True, self.color_text)
+        text_rect = self.ui.font_get_rect(text_surface, centery=self.rect.centery, left=self.rect.left + 6)
+        self.ui.blit(text_surface, text_rect, (max(text_rect.w - self.rect.w + 12, 0), 0, self.rect.w, self.rect.h))
 
 
 class Weight:
@@ -106,7 +108,8 @@ class Weight:
     width = 10
     offset = 20
 
-    def __init__(self, start_node, end_node):
+    def __init__(self, ui, start_node, end_node):
+        self.ui = ui
         self.start_node = start_node
         self.end_node = end_node
         self.rect = None
@@ -118,8 +121,6 @@ class Weight:
         self.state = False
         self.is_searched = False
         self.is_searching = False
-
-        self.text_font = pygame.font.Font(None, 32)
 
     def clicked(self, pos):
         click_rect = pygame.rect.Rect(pos[0] - 15, pos[1] - 15, 30, 30)
@@ -156,15 +157,15 @@ class Weight:
         self.is_searching = False
         self.state = False
 
-    def draw(self, window):
+    def draw(self):
         if self.state:
-            self.rect = pygame.draw.line(window, self.color_active, self.start_node.pos, self.end_node.pos, self.width)
+            self.rect = self.ui.draw_line(self.color_active, self.start_node.pos, self.end_node.pos, self.width)
         elif self.is_searching:
-            self.rect = pygame.draw.line(window, self.color_searching, self.start_node.pos, self.end_node.pos, self.width)
+            self.rect = self.ui.draw_line(self.color_searching, self.start_node.pos, self.end_node.pos, self.width)
         elif self.is_searched:
-            self.rect = pygame.draw.line(window, self.color_search, self.start_node.pos, self.end_node.pos, self.width)
+            self.rect = self.ui.draw_line(self.color_search, self.start_node.pos, self.end_node.pos, self.width)
         else:
-            self.rect = pygame.draw.line(window, self.color_passive, self.start_node.pos, self.end_node.pos, self.width)
+            self.rect = self.ui.draw_line(self.color_passive, self.start_node.pos, self.end_node.pos, self.width)
 
         diff_x = self.end_node.pos[0] - self.start_node.pos[0]
         diff_y = self.end_node.pos[1] - self.start_node.pos[1]
@@ -174,9 +175,10 @@ class Weight:
         offset_x = -diff_y / diff_m * self.offset
         offset_y = diff_x / diff_m * self.offset
 
-        text_surface = self.text_font.render(self.length, True, self.color_text)
-        text_rect = text_surface.get_rect(centerx=self.rect.centerx + offset_x, centery=self.rect.centery + offset_y)
-        window.blit(text_surface, text_rect)
+        text_font = self.ui.get_font(None, 32)
+        text_surface = self.ui.font_render(text_font, self.length, True, self.color_text)
+        text_rect = self.ui.font_get_rect(text_surface, centerx=self.rect.centerx + offset_x, centery=self.rect.centery + offset_y)
+        self.ui.blit(text_surface, text_rect)
 
 
 class Node:
@@ -192,8 +194,9 @@ class Node:
     width = 5
     r = 32
 
-    def __init__(self, event, name):
-        self.pos = event.pos
+    def __init__(self, ui, pos, name):
+        self.ui = ui
+        self.pos = pos
         self.rect = None
         self.name = name
         self.origin_name = name
@@ -203,8 +206,6 @@ class Node:
         self.state = False
 
         self.weights = []
-
-        self.text_font = pygame.font.Font(None, 32)
 
     def set_name(self, name):
         self.name = name
@@ -236,9 +237,10 @@ class Node:
         else:
             return self.color_passive
 
-    def draw(self, window):
-        self.rect = pygame.draw.circle(window, self.get_color(), self.pos, self.r)
-        pygame.draw.circle(window, self.color_boundary, self.pos, self.r, self.width)
-        text_surface = self.text_font.render(self.name, True, self.color_text)
-        text_rect = text_surface.get_rect(center=self.rect.center)
-        window.blit(text_surface, text_rect)
+    def draw(self):
+        self.rect = self.ui.draw_circle(self.get_color(), self.pos, self.r)
+        self.ui.draw_circle(self.color_boundary, self.pos, self.r, self.width)
+        text_font = self.ui.get_font(None, 32)
+        text_surface = self.ui.font_render(text_font, self.name, True, self.color_text)
+        text_rect = self.ui.font_get_rect(text_surface, center=self.rect.center)
+        self.ui.blit(text_surface, text_rect)
