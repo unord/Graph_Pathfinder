@@ -1,6 +1,6 @@
 import pygame
 import ctypes
-from uiobjects import TextInput, Button, TextLabel, Line
+from uiobjects import TextInput, Button, TextLabel, Line, Mask
 from editor import Editor
 from math import ceil
 
@@ -51,6 +51,7 @@ class UI:
         self.algo_buttons = []
         self.timeline_buttons = []
         self.lines = []
+        self.masks = []
 
         self.text_input = TextInput(self, pygame.Rect(50, 230, 120, 40))
 
@@ -73,6 +74,12 @@ class UI:
         self.timeline_buttons.append(Button(self, pygame.Rect(50, 940, 120, 40), "Stop", "BUTTON_TIME_STOP"))
 
         self.lines.append(Line(self, (220, 0), (220, self.base_height)))
+        self.lines.append(Line(self, (0, 340), (220, 340)))
+        self.lines.append(Line(self, (0, 740), (220, 740)))
+
+        self.masks.append(Mask(self, pygame.Rect(0, 0, 220, 340), "MASK_GRAPH_BUTTONS"))
+        self.masks.append(Mask(self, pygame.Rect(0, 340, 220, 400), "MASK_ALGO_BUTTONS"))
+        self.masks.append(Mask(self, pygame.Rect(0, 740, 220, self.base_height - 740), "MASK_TIME_BUTTONS"))
 
     def get_virtual_cords(self, real_cords):
         return real_cords[0] * self.base_width / self.width, real_cords[1] * self.base_height / self.height
@@ -188,6 +195,28 @@ class UI:
 
         self.window.blit(source, dest, area)
 
+    def get_surface(self, size, flags=0):
+        surface = pygame.Surface(self.get_real_cords(size), flags)
+        return surface
+
+    def apply_callbacks(self, **callbacks):
+        for button in self.graph_buttons:
+            if button.identifier in callbacks:
+                button.register_callback(callbacks[button.identifier])
+
+        for button in self.algo_buttons:
+            if button.identifier in callbacks:
+                button.register_callback(callbacks[button.identifier])
+
+        for button in self.timeline_buttons:
+            if button.identifier in callbacks:
+                button.register_callback(callbacks[button.identifier])
+
+    def apply_masks(self, **masks):
+        for mask in self.masks:
+            if mask.identifier in masks:
+                mask.state = masks[mask.identifier]
+
     def draw(self) -> None:
         """
         Draw the scene.
@@ -219,6 +248,10 @@ class UI:
             line.draw()
 
         self.text_input.draw()
+
+        for mask in self.masks:
+            mask.draw()
+
         pygame.display.update()
 
 

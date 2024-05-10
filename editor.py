@@ -8,10 +8,10 @@ from timeline import Timeline
 
 class Editor:
     def __init__(self, ui):
+        self.ui = ui
+
         self.active = None
         self.consumed_names = set()
-
-        self.ui = ui
 
         self.nodes = self.ui.nodes
         self.weights = self.ui.weights
@@ -19,26 +19,30 @@ class Editor:
         self.graph_buttons = self.ui.graph_buttons
         self.algo_buttons = self.ui.algo_buttons
 
+        self.start_marked = False
+        self.end_marked = False
+
         self.dijkstra = Dijkstra(self.nodes, self.weights)
         self.bfs = BFS(self.nodes, self.weights)
         self.astar = AStar(self.nodes, self.weights)
 
-        callback_funcs = {
+        self.ui.apply_callbacks(**{
             "BUTTON_GRAPH_START": self.set_node_start,
             "BUTTON_GRAPH_END": self.set_node_end,
             "BUTTON_GRAPH_DELETE": self.delete_item,
             "BUTTON_ALGO_DIJKSTRA": self.dijkstra.run,
             "BUTTON_ALGO_ASTAR": self.astar.run,
             "BUTTON_ALGO_BFS": self.bfs.run,
-        }
+        })
 
-        for button in self.graph_buttons:
-            if button.identifier in callback_funcs:
-                button.register_callback(callback_funcs[button.identifier])
+        self.apply_masks()
 
-        for button in self.algo_buttons:
-            if button.identifier in callback_funcs:
-                button.register_callback(callback_funcs[button.identifier])
+    def apply_masks(self):
+        self.ui.apply_masks(**{
+            "MASK_GRAPH_BUTTONS": True,
+            "MASK_ALGO_BUTTONS": self.start_marked and self.end_marked,
+            "MASK_TIME_BUTTONS": False
+        })
 
     @staticmethod
     def int_to_name(n):
@@ -100,13 +104,21 @@ class Editor:
 
         if self.active.is_start:
             self.active.is_start = False
+            self.start_marked = False
+            self.apply_masks()
             return
 
         for node in self.nodes:
             node.is_start = False
 
+        if self.active.is_end:
+            self.end_marked = False
+
         self.active.is_start = True
         self.active.is_end = False
+        self.start_marked = True
+
+        self.apply_masks()
 
     def set_node_end(self):
         if not isinstance(self.active, Node):
@@ -114,13 +126,21 @@ class Editor:
 
         if self.active.is_end:
             self.active.is_end = False
+            self.end_marked = False
+            self.apply_masks()
             return
 
         for node in self.nodes:
             node.is_end = False
 
+        if self.active.is_start:
+            self.start_marked = False
+
         self.active.is_end = True
         self.active.is_start = False
+        self.end_marked = True
+
+        self.apply_masks()
 
     def delete_item(self):
         # Selected item is a weight
@@ -200,7 +220,7 @@ class Editor:
                 return False
 
         for button in self.algo_buttons:
-            if button.clicked(event.pos):
+            if button.clicked(event.pos) and self.start_marked and self.end_marked:
                 resp = button.callback()
 
                 if not resp:
@@ -208,6 +228,7 @@ class Editor:
 
                 t = Timeline(self.ui, resp)
                 t.main()
+                self.apply_masks()
                 return False
 
         # Iterate all nodes and detect presses
@@ -236,7 +257,7 @@ class Editor:
         """
 
         # Find selected items, and check if new node is to be created
-        if self.select_item(event):
+        if self.select_item(event) and event.pos[0] > 252:
             new = Node(self.ui, event.pos, self.get_next_name())
             self.nodes.append(new)
             # self.set_active(new)  # Can be enabled to set new nodes activated

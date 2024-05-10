@@ -201,8 +201,6 @@ class AStar(Algorithm):
 
             self.cand_paths.append(new_path)
 
-            # print(", ".join(node.name for node in new_path.nodes))
-
     def run(self):
         self.clear()
 

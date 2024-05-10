@@ -24,15 +24,17 @@ class Timeline:
                     solution = path
             self.timeline.append(solution)
 
-        callback_funcs = {
+        self.ui.apply_callbacks(**{
             "BUTTON_TIME_FORWARD": self.forward,
             "BUTTON_TIME_BACK": self.back,
             "BUTTON_TIME_STOP": self.stop
-        }
+        })
 
-        for button in self.timeline_buttons:
-            if button.identifier in callback_funcs:
-                button.register_callback(callback_funcs[button.identifier])
+        self.ui.apply_masks(**{
+            "MASK_GRAPH_BUTTONS": False,
+            "MASK_ALGO_BUTTONS": False,
+            "MASK_TIME_BUTTONS": True
+        })
 
     def stop(self):
         for weight in self.weights:
