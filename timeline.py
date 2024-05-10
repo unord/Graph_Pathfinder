@@ -17,11 +17,10 @@ class Timeline:
 
         self.running = None
 
-        if not self.timeline[-1].nodes[-1].is_end:
-            solution = None
-            for path in self.timeline:
-                if path.nodes[-1].is_end:
-                    solution = path
+        end_paths = [path for path in self.timeline if path.nodes[-1].is_end]
+        solution = min(end_paths, key=lambda path: path.length)
+
+        if solution.length < self.timeline[-1].length:
             self.timeline.append(solution)
 
         self.ui.apply_callbacks(**{
@@ -65,7 +64,12 @@ class Timeline:
 
         for path in self.active_paths:
             for node in path.nodes:
-                node.set_name(str(path.length_to_node(node)))
+                length = path.length_to_node(node)
+
+                if node.name.isnumeric() and int(node.name) <= length:
+                    continue
+
+                node.set_name(str(length))
 
             for weight in path.weights:
                 weight.set_searched()
@@ -82,7 +86,12 @@ class Timeline:
         self.current_path = self.timeline[self.current_pos]
         self.active_paths.append(self.current_path)
         for node in self.current_path.nodes:
-            node.set_name(str(self.current_path.length_to_node(node)))
+            length = self.current_path.length_to_node(node)
+
+            if node.name.isnumeric() and int(node.name) <= length:
+                continue
+
+            node.set_name(str(length))
 
         for path in self.active_paths:
             if path is not self.current_path:

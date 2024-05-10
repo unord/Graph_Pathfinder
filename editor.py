@@ -1,7 +1,7 @@
 import pygame
 import sys
 from uiobjects import Node, Weight, Button
-from algo import BFS, AStar, Dijkstra
+from algo import BFS, AStar, Dijkstra, Greedy, DFS
 from string import ascii_uppercase as alphabet
 from timeline import Timeline
 
@@ -25,6 +25,8 @@ class Editor:
         self.dijkstra = Dijkstra(self.nodes, self.weights)
         self.bfs = BFS(self.nodes, self.weights)
         self.astar = AStar(self.nodes, self.weights)
+        self.dfs = DFS(self.nodes, self.weights)
+        self.greedy = Greedy(self.nodes, self.weights)
 
         self.ui.apply_callbacks(**{
             "BUTTON_GRAPH_START": self.set_node_start,
@@ -33,6 +35,8 @@ class Editor:
             "BUTTON_ALGO_DIJKSTRA": self.dijkstra.run,
             "BUTTON_ALGO_ASTAR": self.astar.run,
             "BUTTON_ALGO_BFS": self.bfs.run,
+            "BUTTON_ALGO_DFS": self.dfs.run,
+            "BUTTON_ALGO_GREEDY": self.greedy.run
         })
 
         self.apply_masks()

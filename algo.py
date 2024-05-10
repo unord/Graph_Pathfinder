@@ -1,4 +1,3 @@
-import pygame
 from uiobjects import Node, Weight
 
 
@@ -77,13 +76,19 @@ class Dijkstra(Algorithm):
         other = weight.get_other_node(path.curr_node)
         new_path = Path(other, weight, path)
 
+        if len(path.nodes) > 1 and path.nodes[-2] == other:
+            return
+
+        self.recording.append(new_path)
+
         if other in self.fastest_paths:
             if new_path.length >= self.fastest_paths[other].length:
                 return
 
+            self.curr_paths = list(filter(lambda path: path.nodes[-1] != other, self.curr_paths))
+
         self.fastest_paths[other] = new_path
         self.curr_paths.append(new_path)
-        self.recording.append(new_path)
 
     def run(self):
         self.clear()
@@ -125,15 +130,20 @@ class BFS(Algorithm):
         self.fastest_paths[dest_node] = path
         self.new_paths.append(path)
 
-        self.recording.append(path)
-
     def explore_weight(self, path: Path, weight: Weight) -> bool:
         other = weight.get_other_node(path.curr_node)
         new_path = Path(other, weight, path)
 
+        if len(path.nodes) > 1 and path.nodes[-2] == other:
+            return False
+
+        self.recording.append(new_path)
+
         if other in self.fastest_paths:
             if new_path.length >= self.fastest_paths[other].length:
                 return False
+
+            self.curr_paths = list(filter(lambda path: path.nodes[-1] != other, self.curr_paths))
 
         self.new_path(other, new_path)
         return True
@@ -180,15 +190,17 @@ class AStar(Algorithm):
     def estimate_distance(node1: Node, node2: Node) -> int:
         diff_x = abs(node1.pos[1] - node2.pos[1])
         diff_y = abs(node1.pos[0] - node2.pos[0])
-        return int((diff_x**2 + diff_y**2)**0.5) // 150
+        return int((diff_x**2 + diff_y**2)**0.5) // 120
 
     def clear(self):
-        self.curr_paths = []
-        self.cand_paths = []
+        self.curr_paths.clear()
+        self.cand_paths.clear()
         self.fastest_paths = {}
 
         self.start_node = None
         self.end_node = None
+
+        self.recording.clear()
 
     def find_candidates(self, path):
         for weight in path.curr_node.weights:
@@ -216,6 +228,7 @@ class AStar(Algorithm):
         while self.end_node not in self.fastest_paths:
             self.cand_paths = sorted(self.cand_paths, key=lambda path: path.estimated_length, reverse=True)
             optimal_candidate = self.cand_paths.pop()
+            self.recording.append(optimal_candidate)
 
             if optimal_candidate.curr_node in self.fastest_paths:
                 if optimal_candidate.length >= self.fastest_paths[optimal_candidate.curr_node].length:
@@ -224,7 +237,132 @@ class AStar(Algorithm):
             self.fastest_paths[optimal_candidate.curr_node] = optimal_candidate
             self.curr_paths.append(optimal_candidate)
 
+            self.find_candidates(optimal_candidate)
+
+        if self.end_node in self.fastest_paths:
+            return self.recording
+        return False
+
+
+class DFS(Algorithm):
+    def __init__(self, nodes: list[Node], weights: list[Weight]):
+        self.curr_paths = []
+        self.fastest_paths = {}
+
+        super().__init__(nodes, weights)
+
+    def clear(self):
+        self.curr_paths.clear()
+        self.fastest_paths = {}
+
+        self.recording.clear()
+
+    def explore_path(self, path: Path, weight: Weight):
+        other = weight.get_other_node(path.curr_node)
+        new_path = Path(other, weight, path)
+
+        if len(path.nodes) > 1 and path.nodes[-2] == other:
+            return False
+
+        self.recording.append(new_path)
+
+        if other in self.fastest_paths:
+            if new_path.length >= self.fastest_paths[other].length:
+                return False
+
+            self.curr_paths = list(filter(lambda path: path.nodes[-1] != other, self.curr_paths))
+
+        self.fastest_paths[other] = new_path
+        self.curr_paths.insert(0, new_path)
+
+        return other.is_end
+
+    def run(self):
+        self.clear()
+
+        start_node = self.find_start()
+        end_node = self.find_end()
+
+        start_path = Path(start_node)
+        self.curr_paths.append(start_path)
+
+        ending_found = False
+
+        while not ending_found and self.curr_paths:
+            cand_path = self.curr_paths.pop(0)
+
+            for weight in cand_path.curr_node.weights:
+                if self.explore_path(cand_path, weight):
+                    ending_found = True
+                    break
+
+        if end_node in self.fastest_paths:
+            return self.recording
+        return False
+
+
+class Greedy(Algorithm):
+    def __init__(self, nodes: list[Node], weights: list[Weight]):
+        self.curr_paths = []
+        self.cand_paths = []
+        self.fastest_paths = {}
+
+        self.start_node = None
+        self.end_node = None
+
+        super().__init__(nodes, weights)
+
+    @staticmethod
+    def estimate_distance(node1: Node, node2: Node) -> int:
+        diff_x = abs(node1.pos[1] - node2.pos[1])
+        diff_y = abs(node1.pos[0] - node2.pos[0])
+        return int((diff_x**2 + diff_y**2)**0.5) // 120
+
+    def clear(self):
+        self.curr_paths.clear()
+        self.cand_paths.clear()
+        self.fastest_paths = {}
+
+        self.start_node = None
+        self.end_node = None
+
+        self.recording.clear()
+
+    def find_candidates(self, path):
+        for weight in path.curr_node.weights:
+            other = weight.get_other_node(path.curr_node)
+            new_path = Path(other, weight, path, self.estimate_distance(other, self.end_node))
+
+            if other in self.fastest_paths:
+                if new_path.length >= self.fastest_paths[other].length:
+                    continue
+
+            self.cand_paths.append(new_path)
+
+    def run(self):
+        self.clear()
+
+        self.start_node = self.find_start()
+        self.end_node = self.find_end()
+
+        start_path = Path(self.start_node, heu_length=self.estimate_distance(self.start_node, self.end_node))
+        self.curr_paths.append(start_path)
+        self.find_candidates(start_path)
+
+        self.fastest_paths[self.start_node] = start_path
+
+        while self.end_node not in self.fastest_paths:
+            self.cand_paths = sorted(self.cand_paths, key=lambda path: path.heu_length, reverse=True)
+            optimal_candidate = self.cand_paths.pop()
             self.recording.append(optimal_candidate)
+
+            if optimal_candidate.curr_node in self.fastest_paths:
+                if optimal_candidate.length >= self.fastest_paths[optimal_candidate.curr_node].length:
+                    continue
+
+            self.fastest_paths[optimal_candidate.curr_node] = optimal_candidate
+            self.curr_paths.append(optimal_candidate)
+
             self.find_candidates(optimal_candidate)
 
         if self.end_node in self.fastest_paths:
