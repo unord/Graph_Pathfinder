@@ -3,6 +3,7 @@ import ctypes
 from uiobjects import TextInput, Button, TextLabel, Line, Mask
 from editor import Editor
 from math import ceil
+from typing import Callable
 
 
 class UI:
@@ -14,7 +15,10 @@ class UI:
     It distinguishes between virtual and real coordinates and sizes.
         Virtual coordinates map to the default 1080p sizes.
         Real coordinates map to the actual resolution of the screen.
-    The class provides
+    The class provides methods for translating between these coordinates.
+    These methods are baked into alternatives to pygame.draw.rect etc.
+    These methods can be called using virtual coordinates, and will then be translated before rendering.
+    This removes the need for every part of the program to known the size of the screen.
 
     Attributes:
         base_width: Default width of UI
@@ -33,6 +37,7 @@ class UI:
         0: Horizontal
         1: Vertical
         2: (Horizontal, Vertical)
+    Used to correctly translate virtual and real coordinates.
     """
     rect_attr = {
         "x": 0,
@@ -110,21 +115,54 @@ class UI:
         self.masks.append(Mask(self, pygame.Rect(0, 340, 220, 400), "MASK_ALGO_BUTTONS"))
         self.masks.append(Mask(self, pygame.Rect(0, 740, 220, self.base_height - 740), "MASK_TIME_BUTTONS"))
 
-    def get_virtual_cords(self, real_cords):
-        """"""
+    def get_virtual_cords(self, real_cords: tuple[int, int]) -> tuple[float, float]:
+        """
+        Converts real coordinates to virtual coordinates.
+
+        :param real_cords: Real coordinates
+        :return: Virtual coordinates
+        """
 
         return real_cords[0] * self.base_width / self.width, real_cords[1] * self.base_height / self.height
 
-    def get_real_cords(self, virtual_cords):
+    def get_real_cords(self, virtual_cords: tuple[int, int]) -> tuple[float, float]:
+        """
+        Converts virtual coordinates to real coordinates.
+
+        :param virtual_cords: Virtual coordinates
+        :return: Real coordinates
+        """
+
         return virtual_cords[0] * self.width / self.base_width, virtual_cords[1] * self.height / self.base_height
 
-    def get_real_horizontal(self, virtual_horizontal):
+    def get_real_horizontal(self, virtual_horizontal: int) -> float:
+        """
+        Translates virtual horizontal coordinate or length to real coordinate or length.
+
+        :param virtual_horizontal: Virtual coordinate or length
+        :return: Real coordinate or length
+        """
+
         return virtual_horizontal * self.width / self.base_width
 
-    def get_real_vertical(self, virtual_vertical):
+    def get_real_vertical(self, virtual_vertical: int) -> float:
+        """
+        Translates virtual vertical coordinate or length to real coordinate or length.
+
+        :param virtual_vertical: Virtual coordinate or length
+        :return: Real coordinate or length
+        """
+
         return virtual_vertical * self.height / self.base_height
 
-    def get_virtual_rect(self, real_rect):
+    def get_virtual_rect(self, real_rect: pygame.Rect) -> pygame.Rect:
+        """
+        Converts a pygame rect based on real coordinates to one based on virtual coordinates.
+
+        :param real_rect: Real rect
+        :return: Virtual rect
+        """
+
         return pygame.Rect(
             real_rect.left * self.base_width / self.width,
             real_rect.top * self.base_height / self.height,
@@ -132,7 +170,14 @@ class UI:
             real_rect.height * self.base_height / self.height
         )
 
-    def get_real_rect(self, virtual_rect):
+    def get_real_rect(self, virtual_rect: pygame.Rect) -> pygame.Rect:
+        """
+        Converts a pygame rect based on virtual coordinates to one based on real coordinates.
+
+        :param virtual_rect: Virtual rect
+        :return: Real rect
+        """
+
         return pygame.Rect(
             virtual_rect.left * self.width / self.base_width,
             virtual_rect.top * self.height / self.base_height,
@@ -140,19 +185,52 @@ class UI:
             virtual_rect.height * self.height / self.base_height
         )
 
-    def get_real_max(self, virtual_length):
+    def get_real_max(self, virtual_length: int) -> float:
+        """
+        Converts a virtual coordinate or length to a real coordinate or length,
+        by scaling to the larger virtual/real ratio between horizontal and vertical.
+
+        :param virtual_length: Virtual coordinate or length
+        :return: Real coordinate or length
+        """
+
         scale = max(self.width / self.base_width, self.height / self.base_height)
         return virtual_length * scale
 
-    def get_real_min(self, virtual_length):
+    def get_real_min(self, virtual_length: int) -> float:
+        """
+        Converts a virtual coordinate or length to a real coordinate or length,
+        by scaling to the smaller virtual/real ratio between horizontal and vertical.
+
+        :param virtual_length: Virtual coordinate or length
+        :return: Real coordinate or length
+        """
+
         scale = min(self.width / self.base_width, self.height / self.base_height)
         return virtual_length * scale
 
-    def get_real_avg(self, virtual_length):
+    def get_real_avg(self, virtual_length: int) -> float:
+        """
+        Converts a virtual coordinate or length to a real coordinate or length,
+        by scaling to the average virtual/real ratio between horizontal and vertical.
+
+        :param virtual_length: Virtual coordinate or length
+        :return: Real coordinate or length
+        """
+
         scale = (self.width / self.base_width + self.height / self.base_height) / 2
         return virtual_length * scale
 
-    def draw_rect(self, color, rect, width=0):
+    def draw_rect(self, color: pygame.Color, rect: pygame.Rect, width: int = 0) -> pygame.Rect:
+        """
+        Draw a rect based on its virtual rect.
+
+        :param color: Color of the rect
+        :param rect: Virtual rect
+        :param width: Virtual width of border
+        :return: Virtual rect bounding changed pixels
+        """
+
         real_rect = pygame.draw.rect(
             self.window,
             color,
@@ -162,7 +240,17 @@ class UI:
 
         return self.get_virtual_rect(real_rect)
 
-    def draw_line(self, color, start_pos, end_pos, width=1):
+    def draw_line(self, color: pygame.Color, start_pos: tuple[int, int], end_pos: tuple[int, int], width: int = 1) -> pygame.Rect:
+        """
+        Draw a line based on its virtual coordinates.
+
+        :param color: Color of the line
+        :param start_pos: Virtual start position
+        :param end_pos: Virtual end position
+        :param width: Virtual width of line
+        :return: Virtual rect bounding changed pixels
+        """
+
         real_rect = pygame.draw.line(
             self.window,
             color,
@@ -173,7 +261,17 @@ class UI:
 
         return self.get_virtual_rect(real_rect)
 
-    def draw_circle(self, color, center, radius, width=0):
+    def draw_circle(self, color: pygame.Color, center: tuple[int, int], radius: int, width: int = 0) -> pygame.Rect:
+        """
+        Draw a circle based on its virtual coordinates.
+
+        :param color: Color of the circle
+        :param center: Virtual center of the circle
+        :param radius: Virtual radius of the circle
+        :param width: Virtual width of the circle
+        :return: Virtual rect bounding changed pixels
+        """
+
         real_rect = pygame.draw.circle(
             self.window,
             color,
@@ -184,10 +282,25 @@ class UI:
 
         return self.get_virtual_rect(real_rect)
 
-    def get_font(self, file_path=None, size=12):
+    def get_font(self, file_path=None, size=12) -> pygame.font.Font:
+        """
+        Generate a font object from virtual size.
+
+        :param file_path: Path to font file
+        :param size: Virtual size of font
+        :return: Font object
+        """
+
         return pygame.font.Font(file_path, int(self.get_real_avg(size)))
 
-    def get_real_rect_attr(self, virtual_attr):
+    def get_real_rect_attr(self, virtual_attr: dict[str: int]) -> dict[str: float]:
+        """
+        Convert pygame rect attributes from virtual to real.
+
+        :param virtual_attr: Virtual rect attributes
+        :return: Real rect attributes
+        """
+
         real_attr = {}
 
         for k, v in virtual_attr.items():
@@ -195,6 +308,7 @@ class UI:
                 real_attr[k] = v
                 continue
 
+            # Use property map to correctly convert rect properties
             if self.rect_attr[k] == 0:
                 real_attr[k] = self.get_real_horizontal(v)
             elif self.rect_attr[k] == 1:
@@ -205,32 +319,74 @@ class UI:
         return real_attr
 
     @staticmethod
-    def font_render(font, text, antialias, color):
+    def font_render(font: pygame.font.Font, text: str, antialias: bool, color: pygame.Color) -> pygame.Surface:
+        """
+        Wrapper function to font.render.
+
+        :param font: Font to render with
+        :param text: Text to render
+        :param antialias: Enable antialiasing
+        :param color: Color of text
+        :return: Surface with text
+        """
+
         return font.render(text, antialias, color)
 
-    def font_get_rect(self, text_surface, **rect_attr):
+    def font_get_rect(self, text_surface: pygame.Surface, **rect_attr: dict[str: int]) -> pygame.Rect:
+        """
+        Get rect from text surface using virtual rect properties.
+
+        :param text_surface: Surface to use
+        :param rect_attr: Virtual rect properties
+        :return: Virtual surface rect
+        """
+
         rect_attr = self.get_real_rect_attr(rect_attr)
         real_rect = text_surface.get_rect(**rect_attr)
         return self.get_virtual_rect(real_rect)
 
-    def blit(self, source, dest, area=None):
+    def blit(self, source: pygame.Surface, dest: pygame.Rect | tuple, area: pygame.Rect | tuple = None) -> None:
+        """
+        Blit a surface to the screen using virtual coordinates.
+
+        :param source: Surface to draw
+        :param dest: Virtual coordinates to draw surface
+        :param area: Virtual rect bounding part of source to draw
+        :return: None
+        """
+
         if isinstance(dest, pygame.Rect):
             dest = self.get_real_rect(dest)
-        elif isinstance(dest, tuple) or isinstance(dest, list):
+        elif isinstance(dest, tuple):
             dest = self.get_real_cords(dest)
 
-        if isinstance(area, tuple) or isinstance(area, list):
+        if isinstance(area, tuple):
             area = pygame.Rect(area)
         if isinstance(area, pygame.Rect):
             area = self.get_real_rect(area)
 
         self.window.blit(source, dest, area)
 
-    def get_surface(self, size, flags=0):
+    def get_surface(self, size: tuple[int, int], flags: int = 0) -> pygame.Surface:
+        """
+        Generate surface from virtual size.
+
+        :param size: Virtual size
+        :param flags: pygame flags
+        :return: Real surface
+        """
+
         surface = pygame.Surface(self.get_real_cords(size), flags)
         return surface
 
-    def apply_callbacks(self, **callbacks):
+    def apply_callbacks(self, **callbacks: dict[str: Callable]) -> None:
+        """
+        Apply callbacks to buttons from pairs of identifiers and functions.
+
+        :param callbacks: Dict of identifiers and callbacks
+        :return: None
+        """
+
         for button in self.graph_buttons:
             if button.identifier in callbacks:
                 button.register_callback(callbacks[button.identifier])
@@ -243,14 +399,21 @@ class UI:
             if button.identifier in callbacks:
                 button.register_callback(callbacks[button.identifier])
 
-    def apply_masks(self, **masks):
+    def apply_masks(self, **masks: dict[str: bool]) -> None:
+        """
+        Apply mask states from pairs of identifiers and states.
+
+        :param masks: Dict of identifiers and mask states
+        :return: None
+        """
+
         for mask in self.masks:
             if mask.identifier in masks:
                 mask.state = masks[mask.identifier]
 
     def draw(self) -> None:
         """
-        Draw the scene.
+        Draws the scene by calling UI-object draw functions and updating the screen.
 
         :return: None
         """
