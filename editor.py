@@ -286,6 +286,7 @@ class Editor:
                 if self.is_name_valid(self.text_input.user_text):
                     self.remove_name(self.active.name)
                     self.active.set_name(self.text_input.user_text)
+                    self.active.origin_name = self.text_input.user_text
                     self.add_name(self.active.name)
 
             elif isinstance(self.active, Weight):

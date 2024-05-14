@@ -3,7 +3,19 @@ import sys
 
 
 class Timeline:
+    """
+    Timeline object to manage visualisation of any algorithm.
+
+    Attributes:
+        
+    """
     def __init__(self, ui, timeline):
+        """
+        Initialize an instance of the timeline class.
+
+        :param ui: The objects to draw to the screen
+        :param timeline: Each algorithm creates a timeline that this object can display
+        """
         self.ui = ui
 
         self.nodes = self.ui.nodes
