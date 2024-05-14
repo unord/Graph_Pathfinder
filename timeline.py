@@ -150,6 +150,9 @@ class Timeline:
 
         while self.running:
             for event in pygame.event.get():
+                if hasattr(event, "pos"):
+                    event.pos = self.ui.get_virtual_cords(event.pos)
+
                 if event.type == pygame.KEYDOWN:
                     self.on_keypress(event)
                 if event.type == pygame.MOUSEBUTTONDOWN:

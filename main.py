@@ -6,11 +6,28 @@ from math import ceil
 
 
 class UI:
+    """
+    UI-class that is responsible for drawing, scaling and keeping track of UI-objects.
+    UI-objects are passed to scenes via UI-object, where they can attach callbacks and such.
+
+    Attributes:
+        base_width: Default width of UI
+        base_height: Default height of UI
+        background_color: Background color of UI
+        rect_attr: Dict describing rect-properties and their axis of dependence
+    """
+
     base_width = 1920
     base_height = 1080
 
-    bg_color = (100, 100, 240, 0.5)
+    background_color = (100, 100, 240, 0.5)
 
+    """
+    Describes axis of dependence for different rect properties
+        0: Horizontal
+        1: Vertical
+        2: (Horizontal, Vertical)
+    """
     rect_attr = {
         "x": 0,
         "y": 1,
@@ -37,7 +54,11 @@ class UI:
     }
 
     def __init__(self):
+        """ Initializes the UI-object along with standard pygame startup-procedures. """
+
+        #
         ctypes.windll.user32.SetProcessDPIAware()
+
         pygame.init()
         self.info = pygame.display.Info()
         self.width, self.height = self.info.current_w, self.info.current_h
@@ -224,7 +245,7 @@ class UI:
         :return: None
         """
 
-        self.window.fill(self.bg_color)
+        self.window.fill(self.background_color)
 
         for weight in self.weights:
             weight.draw()
