@@ -32,7 +32,7 @@ class Timeline:
         end_paths = [path for path in self.timeline if path.nodes[-1].is_end]
         solution = min(end_paths, key=lambda path: path.length)
 
-        if solution.length < self.timeline[-1].length:
+        if not self.timeline[-1].curr_node.is_end or solution.length < self.timeline[-1].length:
             self.timeline.append(solution)
 
         self.ui.apply_callbacks(**{

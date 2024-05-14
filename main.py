@@ -10,6 +10,12 @@ class UI:
     UI-class that is responsible for drawing, scaling and keeping track of UI-objects.
     UI-objects are passed to scenes via UI-object, where they can attach callbacks and such.
 
+    The UI-class also provides the ability to scale the UI to any resolution.
+    It distinguishes between virtual and real coordinates and sizes.
+        Virtual coordinates map to the default 1080p sizes.
+        Real coordinates map to the actual resolution of the screen.
+    The class provides
+
     Attributes:
         base_width: Default width of UI
         base_height: Default height of UI
@@ -56,15 +62,17 @@ class UI:
     def __init__(self):
         """ Initializes the UI-object along with standard pygame startup-procedures. """
 
-        #
+        # Disables windows UI-scaling to get real resolution from pygames display-info
         ctypes.windll.user32.SetProcessDPIAware()
 
+        # Initialize pygame in fullscreen with resolution matching the screens
         pygame.init()
         self.info = pygame.display.Info()
         self.width, self.height = self.info.current_w, self.info.current_h
         self.window = pygame.display.set_mode((self.width, self.height), flags=pygame.FULLSCREEN)
         pygame.display.set_caption('Graph Visualizer')
 
+        # Lists to keep UI-objects
         self.nodes = []
         self.weights = []
         self.text_labels = []
@@ -103,6 +111,8 @@ class UI:
         self.masks.append(Mask(self, pygame.Rect(0, 740, 220, self.base_height - 740), "MASK_TIME_BUTTONS"))
 
     def get_virtual_cords(self, real_cords):
+        """"""
+
         return real_cords[0] * self.base_width / self.width, real_cords[1] * self.base_height / self.height
 
     def get_real_cords(self, virtual_cords):

@@ -60,6 +60,9 @@ class Algorithm:
 
         return False
 
+    def clear(self):
+        self.recording.clear()
+
 
 class Dijkstra(Algorithm):
     def __init__(self, nodes: list[Node], weights: list[Weight]):
@@ -72,11 +75,16 @@ class Dijkstra(Algorithm):
         self.fastest_paths = {}
         self.curr_paths = []
 
+        Algorithm.clear(self)
+
     def explore_path(self, path: Path, weight: Weight):
         other = weight.get_other_node(path.curr_node)
         new_path = Path(other, weight, path)
 
         if len(path.nodes) > 1 and path.nodes[-2] == other:
+            return
+
+        if path.nodes[-1].is_end:
             return
 
         self.recording.append(new_path)
@@ -123,8 +131,10 @@ class BFS(Algorithm):
 
     def clear(self):
         self.fastest_paths = {}
-        self.curr_paths = []
-        self.new_paths = []
+        self.curr_paths.clear()
+        self.new_paths.clear()
+
+        Algorithm.clear(self)
 
     def new_path(self, dest_node: Node, path: Path):
         self.fastest_paths[dest_node] = path
@@ -135,6 +145,9 @@ class BFS(Algorithm):
         new_path = Path(other, weight, path)
 
         if len(path.nodes) > 1 and path.nodes[-2] == other:
+            return False
+
+        if path.nodes[-1].is_end:
             return False
 
         self.recording.append(new_path)
@@ -200,7 +213,7 @@ class AStar(Algorithm):
         self.start_node = None
         self.end_node = None
 
-        self.recording.clear()
+        Algorithm.clear(self)
 
     def find_candidates(self, path):
         for weight in path.curr_node.weights:
@@ -255,7 +268,7 @@ class DFS(Algorithm):
         self.curr_paths.clear()
         self.fastest_paths = {}
 
-        self.recording.clear()
+        Algorithm.clear(self)
 
     def explore_path(self, path: Path, weight: Weight):
         other = weight.get_other_node(path.curr_node)
@@ -326,7 +339,7 @@ class Greedy(Algorithm):
         self.start_node = None
         self.end_node = None
 
-        self.recording.clear()
+        Algorithm.clear(self)
 
     def find_candidates(self, path):
         for weight in path.curr_node.weights:
