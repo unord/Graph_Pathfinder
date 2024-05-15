@@ -46,6 +46,12 @@ class Timeline:
         })
 
     def stop(self):
+        """
+        Function to stop the timeline object from visualizing and return to the editor class
+
+        :Return: None
+        """
+
         for weight in self.weights:
             weight.set_default()
 
@@ -55,6 +61,12 @@ class Timeline:
         self.running = False
 
     def back(self):
+        """
+        Function to visualize the previous path explored of the timeline
+
+        :return: None
+        """
+
         if self.current_pos < 0:
             return
 
@@ -89,6 +101,12 @@ class Timeline:
                 weight.set_searching()
 
     def forward(self):
+        """
+        Function to visualize the next path of the timeline
+        
+        :return: None
+        """
+
         if self.current_pos >= len(self.timeline) - 1:
             return
 
