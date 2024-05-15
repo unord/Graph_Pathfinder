@@ -1,21 +1,19 @@
 import pygame
 import sys
+from algo import Path
 
 
 class Timeline:
-    """
-    Timeline object to manage visualisation of any algorithm.
+    """ Timeline class to manage visualisation of any algorithm. """
 
-    Attributes:
-        
-    """
-    def __init__(self, ui, timeline):
+    def __init__(self, ui, timeline: list[Path]):
         """
         Initialize an instance of the timeline class.
 
-        :param ui: The objects to draw to the screen
+        :param ui: Pointer to the ui object
         :param timeline: Each algorithm creates a timeline that this object can display
         """
+
         self.ui = ui
 
         self.nodes = self.ui.nodes

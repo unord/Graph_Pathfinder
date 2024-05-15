@@ -1,18 +1,28 @@
 import pygame
 import sys
-from uiobjects import Node, Weight, Button
+from uiobjects import Node, Weight
 from algo import BFS, AStar, Dijkstra, Greedy, DFS
 from string import ascii_uppercase as alphabet
 from timeline import Timeline
 
 
 class Editor:
+    """ Editor class that allows the user to create and edit graphs """
+
     def __init__(self, ui):
+        """
+        Create an instance of the Editor class.
+
+        :param ui: Pointer to the ui object
+        """
+
         self.ui = ui
 
+        # active stores currently selected UI-object
         self.active = None
         self.consumed_names = set()
 
+        # Copy references to UI objects
         self.nodes = self.ui.nodes
         self.weights = self.ui.weights
         self.text_input = self.ui.text_input
@@ -22,12 +32,14 @@ class Editor:
         self.start_marked = False
         self.end_marked = False
 
+        # Create algo objects with references to node and weight lists
         self.dijkstra = Dijkstra(self.nodes, self.weights)
         self.bfs = BFS(self.nodes, self.weights)
         self.astar = AStar(self.nodes, self.weights)
         self.dfs = DFS(self.nodes, self.weights)
         self.greedy = Greedy(self.nodes, self.weights)
 
+        # Apply function callbacks
         self.ui.apply_callbacks(**{
             "BUTTON_GRAPH_START": self.set_node_start,
             "BUTTON_GRAPH_END": self.set_node_end,
@@ -41,15 +53,38 @@ class Editor:
 
         self.apply_masks()
 
-    def apply_masks(self):
+    def apply_masks(self) -> None:
+        """
+        Update mask states.
+
+        :return: None
+        """
+
         self.ui.apply_masks(**{
             "MASK_GRAPH_BUTTONS": True,
             "MASK_ALGO_BUTTONS": self.start_marked and self.end_marked,
             "MASK_TIME_BUTTONS": False
         })
 
+    """
+    The editor supports automatically naming nodes. These will be named alphabetically and in order. Example:
+        0: A
+        1: B
+        ...
+        26: Z
+        27: AA
+        28: AB
+    """
+
     @staticmethod
-    def int_to_name(n):
+    def int_to_name(n: int) -> str:
+        """
+        Convert a number to its alphabetical representation.
+
+        :param n: Number to represent
+        :return: Alphabetic representation
+        """
+
         digits = []
 
         while n:
@@ -61,7 +96,14 @@ class Editor:
         return "".join(digits)
 
     @staticmethod
-    def name_to_int(name):
+    def name_to_int(name: str) -> int:
+        """
+        Convert an alphabetical representation to a number.
+
+        :param name: Alphabetic representation
+        :return: Equivalent number
+        """
+
         n = 0
 
         for i, char in enumerate(name[::-1]):
@@ -70,7 +112,13 @@ class Editor:
 
         return n
 
-    def get_next_name(self):
+    def get_next_name(self) -> str:
+        """
+        Find next available name, such that two nodes don't have the same name.
+
+        :return: Alphabetic representation
+        """
+
         i = 1
 
         while True:
@@ -80,41 +128,75 @@ class Editor:
 
             i += 1
 
-    def remove_name(self, name):
+    def remove_name(self, name: str) -> None:
+        """
+        Remove name from consumed_names, freeing the name to be used by other nodes.
+
+        :param name: Alphabetic representation
+        :return: None
+        """
+
         n = self.name_to_int(name)
 
         if n in self.consumed_names:
             self.consumed_names.remove(n)
 
-    def add_name(self, name):
+    def add_name(self, name: str) -> None:
+        """
+        Add name to consumed_names, marking it as already in use.
+
+        :param name: Alphabetic representation
+        :return: None
+        """
+
         n = self.name_to_int(name)
         self.consumed_names.add(n)
 
-    def is_name_valid(self, name):
+    def is_name_valid(self, name: str) -> bool:
+        """
+        Check whether given name is valid to use.
+
+        :param name: Alphabetic representation
+        :return: Whether name is valid
+        """
+
+        # Ensure all characters in name are apart of the alphabet
         if any(char not in alphabet for char in name):
             return False
 
+        # No need to support long names (18278 valid names)
         if len(name) > 3:
             return False
 
+        # Ensure name isn't already in use
         if self.name_to_int(name) in self.consumed_names:
             return False
 
         return True
 
-    def set_node_start(self):
+    def set_node_start(self) -> None:
+        """
+        Set currently selected node as start of graph.
+
+        :return: None
+        """
+
+        # Ensure selected object is a node
         if not isinstance(self.active, Node):
             return
 
+        # If currently selected node is already start, unset the state
         if self.active.is_start:
             self.active.is_start = False
             self.start_marked = False
             self.apply_masks()
             return
 
+        # Unset state for all other nodes (only one start node)
         for node in self.nodes:
             node.is_start = False
 
+        # If current node is already end, unset the state
         if self.active.is_end:
             self.end_marked = False
 
@@ -124,19 +206,29 @@ class Editor:
 
         self.apply_masks()
 
-    def set_node_end(self):
+    def set_node_end(self) -> None:
+        """
+        Set currently selected node as end of graph.
+
+        :return: None
+        """
+
+        # Ensure selected object is a node
         if not isinstance(self.active, Node):
             return
 
+        # If currently selected node is already end, unset the state
         if self.active.is_end:
             self.active.is_end = False
             self.end_marked = False
             self.apply_masks()
             return
 
+        # Unset state for all other nodes (only one end node)
         for node in self.nodes:
             node.is_end = False
 
+        # If current node is already start, unset the state
         if self.active.is_start:
             self.start_marked = False
 
@@ -146,7 +238,13 @@ class Editor:
 
         self.apply_masks()
 
-    def delete_item(self):
+    def delete_item(self) -> None:
+        """
+        Delete currently selected object, or last placed node if no object selected.
+
+        :return: None
+        """
+
         # Selected item is a weight
         if isinstance(self.active, Weight):
             self.weights.remove(self.active)
@@ -176,11 +274,11 @@ class Editor:
 
             self.weights.remove(weight)
 
-    def set_active(self, new: Node | Weight | Button | None) -> None:
+    def set_active(self, new: Node | Weight | None) -> None:
         """
-        Sets the active item and handles necessary changes involved in the process.
+        Sets the active object and handles necessary changes involved in the process.
 
-        :param new: Item to set as active
+        :param new: Object to set as active
         :return: None
         """
 
@@ -210,6 +308,7 @@ class Editor:
         :return: Whether a new node should be created
         """
 
+        # Detect clicks on text input
         if self.text_input.state and not self.text_input.clicked(event.pos):
             self.text_input.state = False
             return False
@@ -218,18 +317,24 @@ class Editor:
             self.text_input.state = True
             return False
 
+        # Test all graph buttons
         for button in self.graph_buttons:
             if button.clicked(event.pos):
                 button.callback()
                 return False
 
+        # Test all algo buttons
         for button in self.algo_buttons:
             if button.clicked(event.pos) and self.start_marked and self.end_marked:
+
+                # Get solution from solver
                 resp = button.callback()
 
+                # If no solution has been found
                 if not resp:
                     return False
 
+                # Create timeline and give control
                 t = Timeline(self.ui, resp)
                 t.main()
                 self.apply_masks()
@@ -264,7 +369,6 @@ class Editor:
         if self.select_item(event) and event.pos[0] > 252:
             new = Node(self.ui, event.pos, self.get_next_name())
             self.nodes.append(new)
-            # self.set_active(new)  # Can be enabled to set new nodes activated
 
     def on_keypress(self, event: pygame.event.Event) -> None:
         """
@@ -283,6 +387,7 @@ class Editor:
             if isinstance(self.active, Node):
                 self.text_input.user_text = self.text_input.user_text.upper()
 
+                # New name has been entered for node
                 if self.is_name_valid(self.text_input.user_text):
                     self.remove_name(self.active.name)
                     self.active.set_name(self.text_input.user_text)
@@ -316,6 +421,8 @@ class Editor:
 
                     # Find node that user unclicked on (dragged)
                     if node.clicked(event.pos):
+
+                        # Prevent creation of overlapping weights
                         for weight in self.weights:
                             if weight.is_similar(self.active, node):
                                 self.set_active(weight)
@@ -339,6 +446,8 @@ class Editor:
 
         while True:
             for event in pygame.event.get():
+
+                # Convert from real to virtual coordinates
                 if hasattr(event, "pos"):
                     event.pos = self.ui.get_virtual_cords(event.pos)
 
