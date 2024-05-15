@@ -19,6 +19,7 @@ class Timeline:
         self.nodes = self.ui.nodes
         self.weights = self.ui.weights
         self.timeline_buttons = self.ui.timeline_buttons
+        self.general_buttons = self.ui.general_buttons
 
         self.timeline = timeline
         self.current_pos = -1
@@ -36,7 +37,8 @@ class Timeline:
         self.ui.apply_callbacks(**{
             "BUTTON_TIME_FORWARD": self.forward,
             "BUTTON_TIME_BACK": self.back,
-            "BUTTON_TIME_STOP": self.stop
+            "BUTTON_TIME_STOP": self.stop,
+            "BUTTON_GEN_EXIT": self.quit
         })
 
         self.ui.apply_masks(**{
@@ -44,6 +46,13 @@ class Timeline:
             "MASK_ALGO_BUTTONS": False,
             "MASK_TIME_BUTTONS": True
         })
+
+    @staticmethod
+    def quit():
+        """ Exit the program """
+
+        pygame.quit()
+        sys.exit()
 
     def stop(self):
         for weight in self.weights:
@@ -120,6 +129,10 @@ class Timeline:
         """
 
         for button in self.timeline_buttons:
+            if button.clicked(event.pos):
+                button.callback()
+
+        for button in self.general_buttons:
             if button.clicked(event.pos):
                 button.callback()
 

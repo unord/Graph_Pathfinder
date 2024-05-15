@@ -84,36 +84,41 @@ class UI:
         self.graph_buttons = []
         self.algo_buttons = []
         self.timeline_buttons = []
+        self.general_buttons = []
         self.lines = []
         self.masks = []
 
-        self.text_input = TextInput(self, pygame.Rect(50, 230, 120, 40))
+        self.text_input = TextInput(self, pygame.Rect(50, 370, 120, 40))
 
-        self.text_labels.append(TextLabel(self, pygame.Rect(50, 40, 120, 40), "Graph:"))
-        self.text_labels.append(TextLabel(self, pygame.Rect(50, 400, 120, 40), "Algorithms:"))
-        self.text_labels.append(TextLabel(self, pygame.Rect(50, 800, 120, 40), "Timeline:"))
+        self.text_labels.append(TextLabel(self, pygame.Rect(50, 30, 120, 40), "General:"))
+        self.text_labels.append(TextLabel(self, pygame.Rect(50, 180, 120, 40), "Graph:"))
+        self.text_labels.append(TextLabel(self, pygame.Rect(50, 490, 120, 40), "Algorithms:"))
+        self.text_labels.append(TextLabel(self, pygame.Rect(50, 850, 120, 40), "Timeline:"))
 
-        self.graph_buttons.append(Button(self, pygame.Rect(50, 80, 120, 40), "Start", "BUTTON_GRAPH_START"))
-        self.graph_buttons.append(Button(self, pygame.Rect(50, 130, 120, 40), "End", "BUTTON_GRAPH_END"))
-        self.graph_buttons.append(Button(self, pygame.Rect(50, 180, 120, 40), "Delete", "BUTTON_GRAPH_DELETE"))
+        self.general_buttons.append(Button(self, pygame.Rect(50, 70, 120, 40), "Exit", "BUTTON_GEN_EXIT"))
 
-        self.algo_buttons.append(Button(self, pygame.Rect(50, 440, 120, 40), "Dijkstra", "BUTTON_ALGO_DIJKSTRA"))
-        self.algo_buttons.append(Button(self, pygame.Rect(50, 490, 120, 40), "A-Star", "BUTTON_ALGO_ASTAR"))
-        self.algo_buttons.append(Button(self, pygame.Rect(50, 540, 120, 40), "BFS", "BUTTON_ALGO_BFS"))
-        self.algo_buttons.append(Button(self, pygame.Rect(50, 590, 120, 40), "DFS", "BUTTON_ALGO_DFS"))
-        self.algo_buttons.append(Button(self, pygame.Rect(50, 640, 120, 40), "Greedy", "BUTTON_ALGO_GREEDY"))
+        self.graph_buttons.append(Button(self, pygame.Rect(50, 220, 120, 40), "Start", "BUTTON_GRAPH_START"))
+        self.graph_buttons.append(Button(self, pygame.Rect(50, 270, 120, 40), "End", "BUTTON_GRAPH_END"))
+        self.graph_buttons.append(Button(self, pygame.Rect(50, 320, 120, 40), "Delete", "BUTTON_GRAPH_DELETE"))
 
-        self.timeline_buttons.append(Button(self, pygame.Rect(50, 840, 120, 40), "Forward", "BUTTON_TIME_FORWARD"))
-        self.timeline_buttons.append(Button(self, pygame.Rect(50, 890, 120, 40), "Back", "BUTTON_TIME_BACK"))
-        self.timeline_buttons.append(Button(self, pygame.Rect(50, 940, 120, 40), "Stop", "BUTTON_TIME_STOP"))
+        self.algo_buttons.append(Button(self, pygame.Rect(50, 530, 120, 40), "Dijkstra", "BUTTON_ALGO_DIJKSTRA"))
+        self.algo_buttons.append(Button(self, pygame.Rect(50, 580, 120, 40), "A-Star", "BUTTON_ALGO_ASTAR"))
+        self.algo_buttons.append(Button(self, pygame.Rect(50, 630, 120, 40), "BFS", "BUTTON_ALGO_BFS"))
+        self.algo_buttons.append(Button(self, pygame.Rect(50, 680, 120, 40), "DFS", "BUTTON_ALGO_DFS"))
+        self.algo_buttons.append(Button(self, pygame.Rect(50, 730, 120, 40), "Greedy", "BUTTON_ALGO_GREEDY"))
+
+        self.timeline_buttons.append(Button(self, pygame.Rect(50, 890, 120, 40), "Forward", "BUTTON_TIME_FORWARD"))
+        self.timeline_buttons.append(Button(self, pygame.Rect(50, 940, 120, 40), "Back", "BUTTON_TIME_BACK"))
+        self.timeline_buttons.append(Button(self, pygame.Rect(50, 990, 120, 40), "Stop", "BUTTON_TIME_STOP"))
 
         self.lines.append(Line(self, (220, 0), (220, self.base_height)))
-        self.lines.append(Line(self, (0, 340), (220, 340)))
-        self.lines.append(Line(self, (0, 740), (220, 740)))
+        self.lines.append(Line(self, (0, 150), (220, 150)))
+        self.lines.append(Line(self, (0, 460), (220, 460)))
+        self.lines.append(Line(self, (0, 820), (220, 820)))
 
-        self.masks.append(Mask(self, pygame.Rect(0, 0, 220, 340), "MASK_GRAPH_BUTTONS"))
-        self.masks.append(Mask(self, pygame.Rect(0, 340, 220, 400), "MASK_ALGO_BUTTONS"))
-        self.masks.append(Mask(self, pygame.Rect(0, 740, 220, self.base_height - 740), "MASK_TIME_BUTTONS"))
+        self.masks.append(Mask(self, pygame.Rect(0, 150, 220, 310), "MASK_GRAPH_BUTTONS"))
+        self.masks.append(Mask(self, pygame.Rect(0, 460, 220, 360), "MASK_ALGO_BUTTONS"))
+        self.masks.append(Mask(self, pygame.Rect(0, 820, 220, self.base_height - 820), "MASK_TIME_BUTTONS"))
 
     def get_virtual_cords(self, real_cords: tuple[int, int]) -> tuple[float, float]:
         """
@@ -399,6 +404,10 @@ class UI:
             if button.identifier in callbacks:
                 button.register_callback(callbacks[button.identifier])
 
+        for button in self.general_buttons:
+            if button.identifier in callbacks:
+                button.register_callback(callbacks[button.identifier])
+
     def apply_masks(self, **masks: dict[str: bool]) -> None:
         """
         Apply mask states from pairs of identifiers and states.
@@ -433,6 +442,9 @@ class UI:
             button.draw()
 
         for button in self.timeline_buttons:
+            button.draw()
+
+        for button in self.general_buttons:
             button.draw()
 
         for label in self.text_labels:

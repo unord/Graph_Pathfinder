@@ -28,6 +28,7 @@ class Editor:
         self.text_input = self.ui.text_input
         self.graph_buttons = self.ui.graph_buttons
         self.algo_buttons = self.ui.algo_buttons
+        self.general_buttons = self.ui.general_buttons
 
         self.start_marked = False
         self.end_marked = False
@@ -48,10 +49,18 @@ class Editor:
             "BUTTON_ALGO_ASTAR": self.astar.run,
             "BUTTON_ALGO_BFS": self.bfs.run,
             "BUTTON_ALGO_DFS": self.dfs.run,
-            "BUTTON_ALGO_GREEDY": self.greedy.run
+            "BUTTON_ALGO_GREEDY": self.greedy.run,
+            "BUTTON_GEN_EXIT": self.quit
         })
 
         self.apply_masks()
+
+    @staticmethod
+    def quit():
+        """ Exit the program """
+
+        pygame.quit()
+        sys.exit()
 
     def apply_masks(self) -> None:
         """
@@ -265,6 +274,12 @@ class Editor:
         else:
             deleted = self.nodes.pop()
 
+        if deleted.is_end:
+            self.end_marked = False
+
+        if deleted.is_start:
+            self.start_marked = False
+
         self.remove_name(deleted.name)
 
         # Delete all connected weights and update nodes accordingly
@@ -340,6 +355,11 @@ class Editor:
                 self.apply_masks()
                 return False
 
+        # Test all general buttons
+        for button in self.general_buttons:
+            if button.clicked(event.pos):
+                button.callback()
+
         # Iterate all nodes and detect presses
         for node in self.nodes:
             if node.clicked(event.pos):
@@ -379,8 +399,7 @@ class Editor:
         """
 
         if event.key == pygame.K_ESCAPE:
-            pygame.quit()
-            sys.exit()
+            self.quit()
 
         # If return key is pressed, update selected item value
         if event.key == pygame.K_RETURN:

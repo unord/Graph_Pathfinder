@@ -387,6 +387,12 @@ class AStar(Algorithm):
         for weight in path.curr_node.weights:
             other = weight.get_other_node(path.curr_node)
             new_path = Path(other, weight, path, self.estimate_distance(other, self.end_node))
+
+            # If path is longer than known path, discard
+            if new_path.curr_node in self.fastest_paths:
+                if new_path.length >= self.fastest_paths[new_path.curr_node].length:
+                    continue
+
             self.cand_paths.append(new_path)
 
     def run(self) -> list[Path] | None:

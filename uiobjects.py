@@ -160,8 +160,8 @@ class Button:
         self.identifier = identifier
 
         self.func = None
-        self.args = None
-        self.kwargs = None
+        self.args = []
+        self.kwargs = {}
 
         # Pre-initialize the text surface and rect, since they don't change at runtime
         text_font = self.ui.get_font(None, 32)
