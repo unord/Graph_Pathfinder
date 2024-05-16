@@ -131,7 +131,7 @@ class Dijkstra(Algorithm):
         # fastest_paths stores fastest found paths to all nodes in graph
         self.fastest_paths = {}
 
-        # curr_paths stores all currently queued paths
+        # cand_paths stores all currently queued paths
         self.cand_paths = []
 
         super().__init__(nodes, weights)
@@ -186,8 +186,8 @@ class Dijkstra(Algorithm):
         # Repeat until end-node is found
         while end_node not in self.fastest_paths:
 
-            # Select node with lowest estimated length
-            self.cand_paths = sorted(self.cand_paths, key=lambda path: path.estimated_length, reverse=True)
+            # Select node with lowest length
+            self.cand_paths = sorted(self.cand_paths, key=lambda path: path.length, reverse=True)
             optimal_candidate = self.cand_paths.pop()
             self.recording.append(optimal_candidate)
 
@@ -442,7 +442,7 @@ class DFS(Algorithm):
         self.fastest_paths = {}
 
         # curr_paths stores all currently queued paths
-        self.curr_paths = []
+        self.cand_paths = []
 
         super().__init__(nodes, weights)
 
@@ -453,18 +453,18 @@ class DFS(Algorithm):
         :return: None
         """
 
-        self.curr_paths.clear()
+        self.cand_paths.clear()
         self.fastest_paths = {}
 
         Algorithm.clear(self)
 
-    def explore_path(self, path: Path, weight: Weight) -> bool:
+    def explore_path(self, path: Path, weight: Weight) -> None:
         """
         Explore a path and weight.
 
         :param path: Path to explore
         :param weight: Weight to explore
-        :return: Whether end node has been found
+        :return: None
         """
 
         # Get path corresponding to path + weight
@@ -472,26 +472,12 @@ class DFS(Algorithm):
 
         # If third to last node is equal to current node, the path has repeated, discard
         if len(path.nodes) > 1 and path.nodes[-2] == other:
-            return False
+            return
 
         new_path = Path(other, weight, path)
-        self.recording.append(new_path)
-
-        if other in self.fastest_paths:
-
-            # If path is slower than known path, discard
-            if new_path.length >= self.fastest_paths[other].length:
-                return False
-
-            # Filter redundant paths from curr_paths
-            self.curr_paths = list(filter(lambda path: path.nodes[-1] != other, self.curr_paths))
-
-        self.fastest_paths[other] = new_path
 
         # Push new path to top of stack (depth first)
-        self.curr_paths.insert(0, new_path)
-
-        return other.is_end
+        self.cand_paths.insert(0, new_path)
 
     def run(self) -> list[Path] | None:
         """
@@ -506,23 +492,34 @@ class DFS(Algorithm):
         end_node = self.find_end()
 
         start_path = Path(start_node)
-        self.curr_paths.append(start_path)
+        self.cand_paths.append(start_path)
 
         ending_found = False
 
         # Iterate until ending found or no more paths to explore
-        while not ending_found and self.curr_paths:
+        while not ending_found and self.cand_paths:
 
             # Get path from top of stack
-            cand_path = self.curr_paths.pop(0)
+            cand_path = self.cand_paths.pop(0)
+            self.recording.append(cand_path)
+
+            if cand_path.curr_node in self.fastest_paths:
+
+                # If path is slower than known path, discard
+                if cand_path.length >= self.fastest_paths[cand_path.curr_node].length:
+                    continue
+
+            self.fastest_paths[cand_path.curr_node] = cand_path
+
+            if cand_path.curr_node.is_end:
+
+                break
 
             for weight in cand_path.curr_node.weights:
-                if self.explore_path(cand_path, weight):
-                    ending_found = True
-                    break
+                self.explore_path(cand_path, weight)
 
         if end_node in self.fastest_paths:
-            return self.recording
+            return self.recording[1:]
 
 
 class Greedy(Algorithm):
