@@ -76,9 +76,11 @@ class Timeline:
         :return: None
         """
 
+        # Don't step beyond the bounds of the timeline
         if self.current_pos < 0:
             return
 
+        # Stepping backwards, removing most recent path
         self.current_pos -= 1
         self.active_paths = self.active_paths[:-1]
 
@@ -87,24 +89,29 @@ class Timeline:
         else:
             self.current_path = None
 
+        # Reset all nodes and weights to their original
         for node in self.nodes:
             node.set_name_origin()
 
         for weight in self.weights:
             weight.set_default()
 
+        # Set the length of all nodes to the shortest distance to them
         for path in self.active_paths:
             for node in path.nodes:
                 length = path.length_to_node(node)
 
+                # Faster route discovered earlier
                 if node.name.isnumeric() and int(node.name) <= length:
                     continue
 
                 node.set_name(str(length))
 
+            # Mark searched weights as searched (red)
             for weight in path.weights:
                 weight.set_searched()
 
+        # Mark weights in current path as being searched (green)
         if self.current_path is not None:
             for weight in self.current_path.weights:
                 weight.set_searching()
@@ -116,25 +123,32 @@ class Timeline:
         :return: None
         """
 
+        # Don't step beyond the bounds of the timeline
         if self.current_pos >= len(self.timeline) - 1:
             return
 
+        # Get next path in the timeline
         self.current_pos += 1
         self.current_path = self.timeline[self.current_pos]
         self.active_paths.append(self.current_path)
+
+        # Set the length of all nodes to the shortest distance to them
         for node in self.current_path.nodes:
             length = self.current_path.length_to_node(node)
 
+            # Faster route discovered earlier
             if node.name.isnumeric() and int(node.name) <= length:
                 continue
 
             node.set_name(str(length))
 
+        # Mark searched weights as searched (red)
         for path in self.active_paths:
             if path is not self.current_path:
                 for weight in path.weights:
                     weight.set_searched()
 
+        # Mark weights in current path as being searched (green)
         for weight in self.current_path.weights:
             weight.set_searching()
 

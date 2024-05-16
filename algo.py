@@ -117,16 +117,16 @@ class Algorithm:
         self.recording.clear()
 
 
-class Dijkstra(Algorithm):
-    """ Class to perform the Dijkstra pathfinding algorithm on a graph of nodes. """
+"""class Dijkstra(Algorithm):
+     Class to perform the Dijkstra pathfinding algorithm on a graph of nodes. 
 
     def __init__(self, nodes: list[Node], weights: list[Weight]):
-        """
+        
         Initialize an instance of the Dijkstra class.
 
         :param nodes: Nodes in graph
         :param weights: Weights in graph
-        """
+        
 
         # fastest_paths stores fastest found paths to all nodes in graph
         self.fastest_paths = {}
@@ -137,11 +137,11 @@ class Dijkstra(Algorithm):
         super().__init__(nodes, weights)
 
     def clear(self) -> None:
-        """
+        
         Clear properties to init-state.
 
         :return: None
-        """
+        
 
         self.fastest_paths = {}
         self.curr_paths = []
@@ -149,13 +149,13 @@ class Dijkstra(Algorithm):
         Algorithm.clear(self)
 
     def explore_path(self, path: Path, weight: Weight) -> None:
-        """
+        
         Explore a path and weight for a new path.
 
         :param path: Path to explore
         :param weight: Weight to explore
         :return: None
-        """
+        
 
         # If the last node is the end node, no gain will be found by further exploration
         if path.nodes[-1].is_end:
@@ -185,11 +185,11 @@ class Dijkstra(Algorithm):
         self.curr_paths.append(new_path)
 
     def run(self) -> list[Path] | None:
-        """
+        
         Run the pathfinding algorithm.
 
         :return: Recording of pathfinding or None
-        """
+        
 
         self.clear()
 
@@ -211,6 +211,93 @@ class Dijkstra(Algorithm):
             # Explore all weights connected to shortest path
             for weight in shortest_path.curr_node.weights:
                 self.explore_path(shortest_path, weight)
+
+        if end_node in self.fastest_paths:
+            return self.recording"""
+
+
+class Dijkstra(Algorithm):
+    """ Class to perform the Dijkstra pathfinding algorithm on a graph of nodes. """
+
+    def __init__(self, nodes: list[Node], weights: list[Weight]):
+        """
+        Initialize an instance of the Dijkstra class.
+
+        :param nodes: Nodes in graph
+        :param weights: Weights in graph
+        """
+
+        # fastest_paths stores fastest found paths to all nodes in graph
+        self.fastest_paths = {}
+
+        # curr_paths stores all currently queued paths
+        self.cand_paths = []
+
+        super().__init__(nodes, weights)
+
+    def clear(self) -> None:
+        """
+        Clear properties to init-state.
+
+        :return: None
+        """
+
+        self.fastest_paths = {}
+        self.cand_paths.clear()
+
+        Algorithm.clear(self)
+
+    def find_candidates(self, path: Path) -> None:
+        """
+        Explore path to find candidate paths.
+
+        :param path: Path to explore
+        :return: None
+        """
+
+        for weight in path.curr_node.weights:
+            other = weight.get_other_node(path.curr_node)
+            new_path = Path(other, weight, path)
+
+            # If path is longer than known path, discard
+            if new_path.curr_node in self.fastest_paths:
+                if new_path.length >= self.fastest_paths[new_path.curr_node].length:
+                    continue
+
+            self.cand_paths.append(new_path)
+
+    def run(self) -> list[Path] | None:
+        """
+        Run the pathfinding algorithm.
+
+        :return: Recording of pathfinding or None
+        """
+
+        self.clear()
+
+        start_node = self.find_start()
+        end_node = self.find_end()
+
+        start_path = Path(start_node)
+        self.find_candidates(start_path)
+        self.fastest_paths[start_node] = start_path
+
+        # Repeat until end-node is found
+        while end_node not in self.fastest_paths:
+
+            # Select node with lowest estimated length
+            self.cand_paths = sorted(self.cand_paths, key=lambda path: path.estimated_length, reverse=True)
+            optimal_candidate = self.cand_paths.pop()
+            self.recording.append(optimal_candidate)
+
+            # If path is longer than known path, discard
+            if optimal_candidate.curr_node in self.fastest_paths:
+                if optimal_candidate.length >= self.fastest_paths[optimal_candidate.curr_node].length:
+                    continue
+
+            # Save path and find candidates
+            self.fastest_paths[optimal_candidate.curr_node] = optimal_candidate
+            self.find_candidates(optimal_candidate)
 
         if end_node in self.fastest_paths:
             return self.recording
