@@ -4,7 +4,7 @@ from uiobjects import Node, Weight
 class Path:
     """ Object to store a path and all related information """
 
-    def __init__(self, new_node: Node, new_weight: Weight = None, prev_path=None, heu_length: int = None):
+    def __init__(self, new_node: Node, new_weight: Weight = None, prev_path=None, heu_length: float = None):
         """
         Initialize an instance of the Path class.
 
@@ -57,7 +57,7 @@ class Path:
                 return n
 
     @property
-    def estimated_length(self) -> int:
+    def estimated_length(self) -> float:
         """
         Combination of real length and heuristic distance to target.
 
@@ -336,7 +336,7 @@ class AStar(Algorithm):
         super().__init__(nodes, weights)
 
     @staticmethod
-    def estimate_distance(node1: Node, node2: Node) -> int:
+    def estimate_distance(node1: Node, node2: Node) -> float:
         """
         Estimate distance between two nodes. Basic heuristic function.
 
@@ -347,7 +347,7 @@ class AStar(Algorithm):
 
         diff_x = abs(node1.pos[1] - node2.pos[1])
         diff_y = abs(node1.pos[0] - node2.pos[0])
-        return int((diff_x**2 + diff_y**2)**0.5) // 120
+        return ((diff_x**2 + diff_y**2)**0.5) / 120
 
     def clear(self) -> None:
         """
@@ -561,7 +561,7 @@ class Greedy(Algorithm):
 
         diff_x = abs(node1.pos[1] - node2.pos[1])
         diff_y = abs(node1.pos[0] - node2.pos[0])
-        return int((diff_x**2 + diff_y**2)**0.5) // 120
+        return ((diff_x ** 2 + diff_y ** 2) ** 0.5) / 120
 
     def clear(self) -> None:
         """
